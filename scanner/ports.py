@@ -908,7 +908,7 @@ class PortScanner:
             # Faster timing template.
             "-T4",
 
-            # Host timeout is inserted below only when configured.
+            # Host timeout is added below only when configured.
             # Scan selected ports.
             "-p",
             selected_ports,
