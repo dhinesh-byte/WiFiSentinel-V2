@@ -1533,3 +1533,24 @@ footer .footer-resources a:hover {
         padding: 25px 20px;
     }
 }
+/* =========================
+   SCAN CONFIGURATION MODAL
+========================= */
+.scan-settings-modal{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px}
+.scan-settings-modal.hidden{display:none}
+.scan-settings-backdrop{position:absolute;inset:0;background:rgba(3,8,18,.78);backdrop-filter:blur(5px)}
+.scan-settings-card{position:relative;width:min(650px,100%);padding:26px;border:1px solid rgba(77,156,247,.35);border-radius:18px;background:#0b172a;color:#eef6ff;box-shadow:0 24px 70px rgba(0,0,0,.48)}
+.scan-settings-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:20px}
+.scan-settings-head h3{margin:4px 0 6px;font-size:24px}
+.scan-settings-subtitle{margin:0;color:#9fb2c9;font-size:13px}
+.scan-settings-close{border:0;background:transparent;color:#9fb2c9;font-size:28px;line-height:1;cursor:pointer}
+.scan-settings-field{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.scan-settings-field>label{font-size:11px;font-weight:700;letter-spacing:.12em;color:#7ea4d8}
+.scan-settings-field select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #2a4365;background:#091425;color:#f3f8ff;outline:none}
+.scan-timeout-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scan-timeout-options label{display:flex;align-items:center;gap:8px;padding:11px 12px;border:1px solid #233c5f;border-radius:10px;background:#091425;color:#dbe8f5;font-size:12px;cursor:pointer}
+.scan-timeout-options input{accent-color:#4d9cf7}
+.scan-settings-warning{display:flex;gap:10px;margin-top:18px;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,175,0,.25);background:rgba(255,175,0,.07);color:#d8dee8;font-size:12px}
+.scan-settings-warning strong{color:#ffbe3b;white-space:nowrap}
+.scan-settings-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.scan-settings-actions .secondary-button,.scan-settings-actions .scan-button{min-height:42px}
