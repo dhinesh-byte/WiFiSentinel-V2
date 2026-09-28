@@ -41,11 +41,9 @@ class PortScanner:
         "8000,8080,8443,8888,9200"
     )
 
-    # Broader TCP range used only when aggressive=True.
-    AGGRESSIVE_PORTS = (
-        "1-1024,1433,1521,2049,2375,3000,3306,3389,"
-        "5000,5432,5900,6379,8000,8080,8443,8888,9200"
-    )
+    # Broader profiles used by the UI scan configuration.
+    THOROUGH_PORTS = "1-20000"
+    DEEP_PORTS = "1-65535"
 
     SERVICE_PROFILES = {
 
@@ -449,15 +447,20 @@ class PortScanner:
     def __init__(
         self,
         ports: str | None = None,
-        timeout: int = 20,
+        timeout: int | None = 20,
+        profile: str = "standard",
     ) -> None:
+
+        self.profile = str(profile or "standard").lower()
+        if self.profile not in {"standard", "thorough", "deep"}:
+            self.profile = "standard"
 
         self.ports = ports or self.DEFAULT_PORTS
 
-        self.timeout = max(
-            5,
-            min(timeout, 60),
-        )
+        if timeout is None:
+            self.timeout = None
+        else:
+            self.timeout = max(5, min(int(timeout), 120))
 
         self.nmap_path = shutil.which("nmap")
 
@@ -880,11 +883,12 @@ class PortScanner:
                 ),
             }
 
-        selected_ports = (
-            self.AGGRESSIVE_PORTS
-            if aggressive
-            else self.ports
-        )
+        selected_ports = self.ports
+        if aggressive:
+            if self.profile == "deep":
+                selected_ports = self.DEEP_PORTS
+            elif self.profile == "thorough":
+                selected_ports = self.THOROUGH_PORTS
 
         command = [
             self.nmap_path,
@@ -895,8 +899,8 @@ class PortScanner:
             # Service/version detection.
             "-sV",
 
-            # Reduce version-detection probes.
-            "--version-light",
+            # Version detection depth follows the selected profile.
+            "--version-all" if self.profile == "deep" else "--version-light",
 
             # Return only open ports.
             "--open",
@@ -904,10 +908,7 @@ class PortScanner:
             # Faster timing template.
             "-T4",
 
-            # Prevent a host from hanging indefinitely.
-            "--host-timeout",
-            f"{self.timeout}s",
-
+            # Host timeout is inserted below only when configured.
             # Scan selected ports.
             "-p",
             selected_ports,
@@ -918,6 +919,10 @@ class PortScanner:
 
             target,
         ]
+        if self.timeout is not None:
+            insert_at = command.index("-p")
+            command[insert_at:insert_at] = ["--host-timeout", f"{self.timeout}s"]
+
         os_detection_requested = self._has_os_detection_privileges()
         if os_detection_requested:
             command.insert(command.index("-oX"), "-O")
@@ -930,7 +935,7 @@ class PortScanner:
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                timeout=self.timeout + 10,
+                timeout=(self.timeout + 10) if self.timeout is not None else None,
                 check=False,
             )
 
