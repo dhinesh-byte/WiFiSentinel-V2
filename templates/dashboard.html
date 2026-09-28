@@ -4,577 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
-
     <title>WiFi Sentinel | Network Security</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
-
 <body>
-
 <div class="app-shell">
-
-    <!-- SIDEBAR -->
     <aside class="sidebar">
-
         <div class="brand">
             <div class="brand-icon">🛡</div>
-
-            <div>
-                <h1>WiFi Sentinel</h1>
-                <span>Network Security</span>
-            </div>
+            <div><h1>WiFi Sentinel</h1><span>Network Security</span></div>
         </div>
-
         <nav class="navigation">
-
-            <a href="#scanner" class="nav-item active">
-                <span>⌕</span>
-                <span>Network Scanner</span>
-            </a>
-
-            <a href="#devices" class="nav-item">
-                <span>▦</span>
-                <span>Devices</span>
-            </a>
-
-            <a href="#risks" class="nav-item">
-                <span>⚠</span>
-                <span>Security Risks</span>
-            </a>
-
-            <a href="#history" class="nav-item">
-                <span>◷</span>
-                <span>Scan History</span>
-            </a>
-
+            <a href="#scanner" class="nav-item active"><span>⌕</span><span>Network Scanner</span></a>
+            <a href="#devices" class="nav-item"><span>▦</span><span>Devices</span></a>
+            <a href="#risks" class="nav-item"><span>⚠</span><span>Security Risks</span></a>
+            <a href="#history" class="nav-item"><span>◷</span><span>Scan History</span></a>
         </nav>
-
-        <div class="sidebar-footer">
-
-            <div class="status-dot"></div>
-
-            <div>
-                <strong>System Ready</strong>
-                <small>Defensive analysis mode</small>
-            </div>
-
-        </div>
-
+        <div class="sidebar-footer"><div class="status-dot"></div><div><strong>System Ready</strong><small>Defensive analysis mode</small></div></div>
     </aside>
 
-
-    <!-- MAIN -->
     <main class="main-content">
-
-        <!-- TOP BAR -->
         <header class="topbar">
-
             <div>
                 <p class="eyebrow">SECURITY OPERATIONS</p>
-
                 <h2>Network Security Center</h2>
-
-                <p class="subtitle">
-                    Discover devices, inspect exposure and identify
-                    potential security risks on authorized networks.
-                </p>
+                <p class="subtitle">Discover devices, inspect exposure and identify potential security risks on authorized networks.</p>
             </div>
-
             <div class="top-status">
-
-                <span class="online-dot"></span>
-
-                <span>LOCAL ANALYZER</span>
-
+                <span class="online-dot"></span><span>LOCAL ANALYZER</span>
                 <nav class="product-nav" aria-label="Product navigation">
-                    <a href="/">Overview</a>
-                    <a href="/history">History</a>
-                    <a class="is-current" href="/defensive" aria-current="page">Defensive</a>
-                    <a href="/offensive/">Offensive</a>
+                    <a href="/">Overview</a><a href="/history">History</a><a class="is-current" href="/defensive" aria-current="page">Defensive</a><a href="/offensive/">Offensive</a>
                 </nav>
                 {% if auth_enabled %}
-                <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit">Sign out</button>
-                </form>
+                <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">Sign out</button></form>
                 {% endif %}
-
             </div>
-
         </header>
 
-
-        <!-- SCANNER -->
         <section id="scanner" class="scanner-card">
-
-            <div class="section-heading">
-
-                <div class="section-icon">⌕</div>
-
-                <div>
-                    <h3>Network Scanner</h3>
-
-                    <p>
-                        Scan an authorized local network for active devices
-                        and security exposure.
-                    </p>
-                </div>
-
-            </div>
-
-
+            <div class="section-heading"><div class="section-icon">⌕</div><div><h3>Network Scanner</h3><p>Scan an authorized local network for active devices and security exposure.</p></div></div>
             <div class="scanner-form">
-
                 <div class="input-wrapper">
-
-                    <label for="networkInput">
-                        TARGET NETWORK
-                    </label>
-
-                    <input
-                        id="networkInput"
-                        type="text"
-                        placeholder="192.168.1.0/24"
-                        autocomplete="off"
-                    >
-
-                    <span class="input-hint">
-                        Example: 192.168.1.0/24
-                    </span>
-
+                    <label for="networkInput">TARGET NETWORK</label>
+                    <input id="networkInput" type="text" placeholder="192.168.1.0/24" autocomplete="off">
+                    <span class="input-hint">Example: 192.168.1.0/24</span>
                 </div>
-
-
-                <button
-                    id="scanButton"
-                    class="scan-button"
-                    type="button"
-                >
-
-                    <span class="button-icon">⌕</span>
-
-                    <span>Start Scan</span>
-
-                </button>
-
+                <button id="scanButton" class="scan-button" type="button"><span class="button-icon">⌕</span><span>Start Scan</span></button>
             </div>
-
-
-            <!-- SCAN STATUS -->
-            <div id="scanStatus" class="scan-status">
-
-                <div class="status-indicator ready"></div>
-
-                <div>
-
-                    <strong id="statusTitle">
-                        Ready to scan
-                    </strong>
-
-                    <span id="statusMessage">
-                        Enter an authorized network range to begin.
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- PROGRESS -->
-            <div
-                id="progressContainer"
-                class="progress-container hidden"
-            >
-
-                <div class="progress-top">
-
-                    <span id="progressStage">
-                        Preparing scan...
-                    </span>
-
-                    <strong id="progressPercent">
-                        0%
-                    </strong>
-
-                </div>
-
-
-                <div class="progress-track">
-
-                    <div
-                        id="progressBar"
-                        class="progress-bar"
-                    ></div>
-
-                </div>
-
-
-                <div class="progress-details">
-
-                    <span id="progressDetail">
-                        Initializing scanner
-                    </span>
-
-                    <span id="scanTimer">
-                        00:00
-                    </span>
-
-                </div>
-
-            </div>
-
+            <div id="scanStatus" class="scan-status"><div class="status-indicator ready"></div><div><strong id="statusTitle">Ready to scan</strong><span id="statusMessage">Enter an authorized network range to begin.</span></div></div>
         </section>
 
-
-        <!-- STATISTICS -->
         <section class="stats-grid">
-
-            <div class="stat-card">
-
-                <div class="stat-icon blue">▦</div>
-
-                <div>
-                    <span>Devices</span>
-                    <strong id="deviceCount">0</strong>
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon purple">⌁</div>
-
-                <div>
-                    <span>Open Ports</span>
-                    <strong id="portCount">0</strong>
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon orange">⚠</div>
-
-                <div>
-                    <span>Potential Risks</span>
-                    <strong id="riskCount">0</strong>
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon green">✓</div>
-
-                <div>
-                    <span>Scan Status</span>
-                    <strong id="scanState">Ready</strong>
-                </div>
-
-            </div>
-
+            <div class="stat-card"><div class="stat-icon blue">⌁</div><div><span>Devices Found</span><strong id="deviceCount">0</strong></div></div>
+            <div class="stat-card"><div class="stat-icon purple">◉</div><div><span>Open Ports</span><strong id="portCount">0</strong></div></div>
+            <div class="stat-card"><div class="stat-icon orange">⚠</div><div><span>Potential Risks</span><strong id="riskCount">0</strong></div></div>
+            <div class="stat-card"><div class="stat-icon green">✓</div><div><span>Scan Status</span><strong id="scanState">Ready</strong></div></div>
         </section>
 
-
-        <!-- DEVICES -->
         <section id="devices" class="content-section">
-
-            <div class="section-title-row">
-
-                <div>
-                    <p class="eyebrow">NETWORK INVENTORY</p>
-
-                    <h3>Discovered Devices</h3>
-
-                    <p>
-                        Select a device to inspect its security details.
-                    </p>
-                </div>
-
-                <div class="device-count-badge">
-
-                    <span id="deviceCountBadge">0</span>
-
-                    DEVICES
-
-                </div>
-
-            </div>
-
-
-            <div id="devicesContainer" class="devices-container">
-
-                <div class="empty-state">
-
-                    <div class="empty-icon">⌁</div>
-
-                    <h4>No scan results</h4>
-
-                    <p>
-                        Start a network scan to discover authorized
-                        network devices.
-                    </p>
-
-                </div>
-
-            </div>
-
+            <div class="section-title-row"><div><p class="eyebrow">NETWORK INVENTORY</p><h3>Discovered Devices</h3><p>Select a device to inspect its security details.</p></div><div class="device-count-badge"><span id="deviceCountBadge">0</span> DEVICES</div></div>
+            <div id="devicesContainer" class="devices-container"><div class="empty-state"><div class="empty-icon">⌁</div><h4>No scan results</h4><p>Start a network scan to discover authorized network devices.</p></div></div>
         </section>
 
-
-        <!-- RISKS -->
         <section id="risks" class="content-section">
-
-            <div class="section-title-row">
-
-                <div>
-
-                    <p class="eyebrow">SECURITY ANALYSIS</p>
-
-                    <h3>Potential Security Exposure</h3>
-
-                    <p>
-                        Defensive findings identified during analysis.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div id="risksContainer" class="risks-container">
-
-                <div class="empty-state compact">
-
-                    <div class="empty-icon">✓</div>
-
-                    <h4>No findings yet</h4>
-
-                    <p>
-                        Security findings will appear after scanning.
-                    </p>
-
-                </div>
-
-            </div>
-
+            <div class="section-title-row"><div><p class="eyebrow">SECURITY ANALYSIS</p><h3>Potential Security Exposure</h3><p>Defensive findings identified during analysis.</p></div></div>
+            <div id="risksContainer" class="risks-container"><div class="empty-state compact"><div class="empty-icon">✓</div><h4>No findings yet</h4><p>Security findings will appear after scanning.</p></div></div>
         </section>
 
-
-        <!-- HISTORY -->
         <section id="history" class="content-section">
-
-            <div class="section-title-row">
-
-                <div>
-
-                    <p class="eyebrow">ACTIVITY</p>
-
-                    <h3>Scan History</h3>
-
-                    <p>
-                        Previous local network assessments.
-                    </p>
-
-                </div>
-
-                <button
-                    id="clearHistory"
-                    class="secondary-button"
-                >
-                    Clear History
-                </button>
-
-            </div>
-
-
-            <div id="historyContainer" class="history-container">
-
-                <div class="empty-state compact">
-
-                    <div class="empty-icon">◷</div>
-
-                    <h4>No scan history</h4>
-
-                    <p>
-                        Completed scans will appear here.
-                    </p>
-
-                </div>
-
-            </div>
-
+            <div class="section-title-row"><div><p class="eyebrow">ASSESSMENT HISTORY</p><h3>Scan History</h3><p>Previous defensive assessments.</p></div><button id="clearHistory" class="secondary-button" type="button">Clear History</button></div>
+            <div id="historyContainer" class="history-container"><div class="empty-state compact"><div class="empty-icon">◷</div><h4>No history yet</h4><p>Completed scans will appear here.</p></div></div>
         </section>
 
-
-        <!-- FOOTER -->
-        <footer>
-
-            <div>
-                <strong>WiFi Sentinel</strong>
-                <span>V2.0</span>
+        <section id="scanProgress" class="scan-progress-panel">
+            <div class="progress-header"><div><p class="eyebrow">LIVE ASSESSMENT</p><strong id="progressStage">Ready</strong><span id="progressDetail">Waiting for scan</span></div><strong id="progressPercent">0%</strong></div>
+            <div class="progress-track"><div id="progressBar" class="progress-bar" style="width:0%"></div></div>
+            <div class="scan-timer-row"><span>Elapsed</span><strong id="scanTimer">00:00</strong></div>
+            <div class="scan-steps">
+                <div id="stepDiscovery" class="scan-step"><span>01</span><div><strong>Discovery</strong><small>Finding active devices</small></div></div>
+                <div id="stepPorts" class="scan-step"><span>02</span><div><strong>Port Analysis</strong><small>Checking network exposure</small></div></div>
+                <div id="stepRisk" class="scan-step"><span>03</span><div><strong>Risk Analysis</strong><small>Evaluating defensive findings</small></div></div>
+                <div id="stepReport" class="scan-step"><span>04</span><div><strong>Report Generation</strong><small>Preparing security summary</small></div></div>
             </div>
+        </section>
 
-            <p>
-                Defensive network security analysis.
-                Scan only networks you own or are authorized to assess.
-            </p>
+        <div id="scanOverlay" class="scan-overlay" aria-hidden="true">
+            <div class="scan-overlay-card"><div class="eyebrow">DEFENSIVE SCAN</div><h3>Assessment running</h3><p id="overlayNetwork">Preparing target</p><div class="progress-track"><div id="overlayProgressBar" class="progress-bar" style="width:0%"></div></div><strong id="overlayPercent">0%</strong><span id="overlayStage">Preparing scan</span></div>
+        </div>
 
-            <nav class="footer-resources" aria-label="External security resources">
-                <a href="https://www.virustotal.com/gui/home/upload" target="_blank" rel="noopener noreferrer">VirusTotal</a>
-                <a href="https://haveibeenpwned.com/" target="_blank" rel="noopener noreferrer">Have I Been Pwned</a>
-            </nav>
-
-        </footer>
-
+        <div id="scanSettingsModal" class="scan-settings-modal hidden" aria-hidden="true">
+            <div class="scan-settings-backdrop"></div>
+            <div class="scan-settings-card" role="dialog" aria-modal="true" aria-labelledby="scan-settings-title">
+                <div class="scan-settings-head"><div><p class="eyebrow">SCAN CONFIGURATION</p><h3 id="scan-settings-title">Choose scan intensity</h3><p class="scan-settings-subtitle">Select the defensive assessment depth and timeout.</p></div><button type="button" id="scanSettingsClose" class="scan-settings-close" aria-label="Close">×</button></div>
+                <div class="scan-settings-field"><label for="scanProfile">SCAN PROFILE</label><select id="scanProfile"><option value="standard">Standard — common services</option><option value="thorough" selected>Thorough — broader TCP + service detection</option><option value="deep">Deep — full TCP range + deeper detection</option></select></div>
+                <div class="scan-settings-field"><label>TIMEOUT</label><div class="scan-timeout-options"><label><input type="radio" name="scanTimeout" value="30"><span>30 sec</span></label><label><input type="radio" name="scanTimeout" value="60" checked><span>60 sec</span></label><label><input type="radio" name="scanTimeout" value="120"><span>120 sec</span></label><label><input type="radio" name="scanTimeout" value="none"><span>No timeout</span></label></div></div>
+                <div class="scan-settings-warning"><strong>AUTHORIZED USE</strong><span>Only scan networks and systems you own or are explicitly authorized to assess.</span></div>
+                <div class="scan-settings-actions"><button type="button" id="scanSettingsCancel" class="secondary-button">Cancel</button><button type="button" id="scanSettingsStart" class="scan-button">Start Assessment</button></div>
+            </div>
+        </div>
     </main>
-
 </div>
-
-
-
-<!-- SCAN CONFIGURATION -->
-<div id="scanSettingsModal" class="scan-settings-modal hidden" aria-hidden="true">
-    <div class="scan-settings-backdrop"></div>
-    <div class="scan-settings-card" role="dialog" aria-modal="true" aria-labelledby="scan-settings-title">
-        <div class="scan-settings-head">
-            <div>
-                <p class="eyebrow">SCAN CONFIGURATION</p>
-                <h3 id="scan-settings-title">Choose scan intensity</h3>
-                <p class="scan-settings-subtitle">Configure the authorized assessment before it starts.</p>
-            </div>
-            <button type="button" id="scanSettingsClose" class="scan-settings-close" aria-label="Close">×</button>
-        </div>
-        <div class="scan-settings-field">
-            <label for="scanProfile">SCAN PROFILE</label>
-            <select id="scanProfile">
-                <option value="standard">Standard — common services</option>
-                <option value="thorough" selected>Thorough — ports 1–20,000 + service detection</option>
-                <option value="deep">Deep — full TCP 1–65,535 + deeper version detection</option>
-            </select>
-        </div>
-        <div class="scan-settings-field">
-            <label>TIMEOUT</label>
-            <div class="scan-timeout-options">
-                <label><input type="radio" name="scanTimeout" value="30"><span>30 sec</span></label>
-                <label><input type="radio" name="scanTimeout" value="60" checked><span>60 sec</span></label>
-                <label><input type="radio" name="scanTimeout" value="120"><span>120 sec</span></label>
-                <label><input type="radio" name="scanTimeout" value="none"><span>No timeout</span></label>
-            </div>
-        </div>
-        <div class="scan-settings-warning">
-            <strong>AUTHORIZED USE</strong>
-            <span>Only scan networks and systems you own or are explicitly authorized to assess.</span>
-        </div>
-        <div class="scan-settings-actions">
-            <button type="button" id="scanSettingsCancel" class="secondary-button">Cancel</button>
-            <button type="button" id="scanSettingsStart" class="scan-button">Start Assessment</button>
-        </div>
-    </div>
-</div>
-
-
-<!-- SCAN OVERLAY -->
-<div
-    id="scanOverlay"
-    class="scan-overlay hidden"
->
-
-    <div class="scan-modal">
-
-        <div class="scan-animation">
-
-            <div class="radar-circle"></div>
-
-            <div class="radar-line"></div>
-
-            <div class="radar-center"></div>
-
-        </div>
-
-
-        <p class="eyebrow">SECURITY ANALYSIS</p>
-
-        <h2>Scanning Network</h2>
-
-        <p id="overlayNetwork">
-            Preparing network analysis...
-        </p>
-
-
-        <div class="overlay-progress">
-
-            <div
-                id="overlayProgressBar"
-                class="overlay-progress-bar"
-            ></div>
-
-        </div>
-
-
-        <div class="overlay-progress-text">
-
-            <strong id="overlayPercent">
-                0%
-            </strong>
-
-            <span id="overlayStage">
-                Initializing...
-            </span>
-
-        </div>
-
-
-        <div class="scan-steps">
-
-            <div id="stepDiscovery" class="scan-step active">
-                <span>01</span>
-                <div>
-                    <strong>Device Discovery</strong>
-                    <small>Finding active hosts</small>
-                </div>
-            </div>
-
-
-            <div id="stepPorts" class="scan-step">
-                <span>02</span>
-                <div>
-                    <strong>Port Analysis</strong>
-                    <small>Checking network exposure</small>
-                </div>
-            </div>
-
-
-            <div id="stepRisk" class="scan-step">
-                <span>03</span>
-                <div>
-                    <strong>Risk Analysis</strong>
-                    <small>Evaluating defensive findings</small>
-                </div>
-            </div>
-
-
-            <div id="stepReport" class="scan-step">
-                <span>04</span>
-                <div>
-                    <strong>Report Generation</strong>
-                    <small>Preparing security summary</small>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=20260928-2"></script>
 </body>
 </html>
