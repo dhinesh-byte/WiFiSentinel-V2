@@ -199,31 +199,83 @@ function handleScanError(error) {
 }
 
 async function startScan() {
-    if (scanRunning) return;
-    const network = networkInput?.value.trim() || "";
-    if (!isValidNetwork(network)) {
-        handleScanError(new Error("Enter a valid IPv4 CIDR network, for example 192.168.1.0/24."));
+
+    if (scanRunning) {
         return;
     }
+
+    const network = networkInput?.value.trim() || "";
+
+    if (!isValidNetwork(network)) {
+        handleScanError(
+            new Error(
+                "Enter a valid IPv4 CIDR network, for example 192.168.1.0/24."
+            )
+        );
+        return;
+    }
+
     const settings = await openScanSettingsModal();
-    if (!settings) return;
+
+    if (!settings) {
+        return;
+    }
+
     currentNetwork = network;
+
     showScanningUI(network);
-    if (statusTitle) statusTitle.textContent = "Preparing scan";
-    if (statusMessage) statusMessage.textContent = `${formatScanProfile(settings.profile)} profile • ${formatScanTimeout(settings.timeout)}`;
+
+    if (statusTitle) {
+        statusTitle.textContent = "Starting defensive assessment";
+    }
+
+    if (statusMessage) {
+        statusMessage.textContent =
+            `${formatScanProfile(settings.profile)} profile • ${formatScanTimeout(settings.timeout)}`;
+    }
+
+    if (scanState) {
+        scanState.textContent = "Starting";
+    }
+
     try {
         const response = await fetch("/api/scan/start", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
-            body: JSON.stringify({ target: network, profile: settings.profile, timeout: settings.timeout })
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                target: network,
+                profile: settings.profile,
+                timeout: settings.timeout
+            })
         });
+
         const data = await response.json();
-        if (!response.ok || !data.success) throw new Error(data.error || data.message || "Unable to start the network scan.");
+
+        if (!response.ok || !data.success || !data.job_id) {
+            throw new Error(
+                data.error ||
+                data.message ||
+                "The defensive scanner did not return a scan job."
+            );
+        }
+
         currentJobId = data.job_id;
-        if (overlayNetwork) overlayNetwork.textContent = `${network} • ${formatScanProfile(settings.profile)} • ${formatScanTimeout(settings.timeout)}`;
-        if (overlayStage) overlayStage.textContent = `${formatScanProfile(settings.profile)} assessment started`;
-        startTimer();
+
+        if (overlayNetwork) {
+            overlayNetwork.textContent =
+                `${network} • ${formatScanProfile(settings.profile)} • ${formatScanTimeout(settings.timeout)}`;
+        }
+
+        if (overlayStage) {
+            overlayStage.textContent =
+                `${formatScanProfile(settings.profile)} assessment started`;
+        }
+
         await pollScanStatus();
+
     } catch (error) {
         handleScanError(error);
     }
