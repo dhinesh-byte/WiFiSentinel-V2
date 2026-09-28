@@ -1,0 +1,1355 @@
+{
+  "report_title": "WiFi Sentinel V2.0 - Offensive Security Assessment",
+  "assessment_status": "INCOMPLETE",
+  "Executive Summary": "Assessment is incomplete. Available findings reflect only the evidence collected; missing scan or assessment data prevents a complete conclusion.",
+  "Scan Information": {
+    "target": "192.168.88.0/24",
+    "scan_type": "offensive",
+    "report_id": "de1d95da-6dc9-4b7f-a43c-b6c0e02a1649",
+    "discovery_status": "COMPLETED",
+    "enumeration_status": "PARTIAL",
+    "vulnerability_assessment_status": "INCOMPLETE",
+    "report_generated_at": "2026-09-27T07:19:07+00:00"
+  },
+  "Hosts Assessed": [
+    {
+      "target": "192.168.88.2",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.3",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.1",
+      "hostname": null,
+      "status": "TIMEOUT",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.8",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.6",
+      "hostname": null,
+      "status": "TIMEOUT",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.7",
+      "hostname": null,
+      "status": "TIMEOUT",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.15",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.22",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 2,
+      "services_identified": 2
+    },
+    {
+      "target": "192.168.88.23",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 2,
+      "services_identified": 2
+    },
+    {
+      "target": "192.168.88.26",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.12",
+      "hostname": null,
+      "status": "TIMEOUT",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.24",
+      "hostname": null,
+      "status": "TIMEOUT",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.31",
+      "hostname": null,
+      "status": "TIMEOUT",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.35",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 0,
+      "services_identified": 0
+    },
+    {
+      "target": "192.168.88.38",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 3,
+      "services_identified": 3
+    },
+    {
+      "target": "192.168.88.250",
+      "hostname": null,
+      "status": "TIMEOUT",
+      "open_ports": 0,
+      "services_identified": 0
+    }
+  ],
+  "Services Discovered": [
+    {
+      "target": "192.168.88.22",
+      "port": 80,
+      "protocol": "tcp",
+      "service": "http",
+      "product": "BusyBox http",
+      "version": "1.19.4",
+      "state": "open"
+    },
+    {
+      "target": "192.168.88.22",
+      "port": 443,
+      "protocol": "tcp",
+      "service": "http",
+      "product": "BusyBox http",
+      "version": "1.19.4",
+      "state": "open"
+    },
+    {
+      "target": "192.168.88.23",
+      "port": 80,
+      "protocol": "tcp",
+      "service": "http",
+      "product": "BusyBox http",
+      "version": "1.19.4",
+      "state": "open"
+    },
+    {
+      "target": "192.168.88.23",
+      "port": 443,
+      "protocol": "tcp",
+      "service": "http",
+      "product": "BusyBox http",
+      "version": "1.19.4",
+      "state": "open"
+    },
+    {
+      "target": "192.168.88.38",
+      "port": 135,
+      "protocol": "tcp",
+      "service": "msrpc",
+      "product": "Microsoft Windows RPC",
+      "version": null,
+      "state": "open"
+    },
+    {
+      "target": "192.168.88.38",
+      "port": 139,
+      "protocol": "tcp",
+      "service": "netbios-ssn",
+      "product": "Microsoft Windows netbios-ssn",
+      "version": null,
+      "state": "open"
+    },
+    {
+      "target": "192.168.88.38",
+      "port": 445,
+      "protocol": "tcp",
+      "service": "microsoft-ds",
+      "product": null,
+      "version": null,
+      "state": "open"
+    }
+  ],
+  "Security Findings": [
+    {
+      "id": "OFF-73158360ad5f",
+      "title": "Exposed network service: http",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.22",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 80,
+      "evidence": [
+        "Enumeration reported TCP port 80 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-36c81b528064",
+      "title": "Cleartext-capable protocol exposed",
+      "severity": "Low",
+      "confidence": "Confirmed",
+      "target": "192.168.88.22",
+      "protocol": "tcp",
+      "service": "HTTP",
+      "description": "The observed HTTP service may transmit data or credentials without transport encryption. Enumeration did not verify application-level settings.",
+      "attack_scenario": "An authorized tester could verify with non-sensitive test traffic whether the service negotiates encryption and protects communications on this path.",
+      "impact": "Where encryption is absent, network observers may be able to read or alter traffic in transit, depending on protocol and network position.",
+      "remediation": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext.",
+      "port": 80,
+      "evidence": [
+        "Enumeration reported TCP port 80 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST SP 800-53 Rev. 5, SC-8: Transmission Confidentiality and Integrity"
+      ]
+    },
+    {
+      "id": "OFF-88185fae6b0a",
+      "title": "Web service exposed",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.22",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration indicates a web endpoint. This does not establish an application vulnerability or whether broader network access is intended.",
+      "attack_scenario": "An authorized tester could review the endpoint's intended audience, authentication boundaries, transport security, and application configuration.",
+      "impact": "The endpoint adds an application surface reachable from the assessed network; impact depends on application design and access controls.",
+      "remediation": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application.",
+      "port": 80,
+      "evidence": [
+        "Enumeration reported TCP port 80 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST SP 800-53 Rev. 5, SC-7: Boundary Protection",
+        "OWASP Application Security Verification Standard (ASVS)"
+      ]
+    },
+    {
+      "id": "OFF-7df49178398f",
+      "title": "Service version requires patch-status review",
+      "severity": "Informational",
+      "confidence": "Potential",
+      "target": "192.168.88.22",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration disclosed a product version. This module does not compare it with vendor advisories and cannot determine whether it is outdated or vulnerable.",
+      "attack_scenario": "An authorized assessor could compare the observed product and version with the vendor's official lifecycle and security advisories.",
+      "impact": "Unsupported or unpatched software may retain known issues; that condition is not established by this assessment.",
+      "remediation": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed.",
+      "port": 80,
+      "evidence": [
+        "Enumeration reported TCP port 80 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST National Vulnerability Database (NVD), for version-specific advisory review",
+        "Product vendor's official security advisories and lifecycle notices"
+      ]
+    },
+    {
+      "id": "OFF-980613944e50",
+      "title": "Exposed network service: http",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.22",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 443,
+      "evidence": [
+        "Enumeration reported TCP port 443 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-27954e22f17e",
+      "title": "Cleartext-capable protocol exposed",
+      "severity": "Low",
+      "confidence": "Confirmed",
+      "target": "192.168.88.22",
+      "protocol": "tcp",
+      "service": "HTTP",
+      "description": "The observed HTTP service may transmit data or credentials without transport encryption. Enumeration did not verify application-level settings.",
+      "attack_scenario": "An authorized tester could verify with non-sensitive test traffic whether the service negotiates encryption and protects communications on this path.",
+      "impact": "Where encryption is absent, network observers may be able to read or alter traffic in transit, depending on protocol and network position.",
+      "remediation": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext.",
+      "port": 443,
+      "evidence": [
+        "Enumeration reported TCP port 443 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST SP 800-53 Rev. 5, SC-8: Transmission Confidentiality and Integrity"
+      ]
+    },
+    {
+      "id": "OFF-bdb8b5dbfe79",
+      "title": "Web service exposed",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.22",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration indicates a web endpoint. This does not establish an application vulnerability or whether broader network access is intended.",
+      "attack_scenario": "An authorized tester could review the endpoint's intended audience, authentication boundaries, transport security, and application configuration.",
+      "impact": "The endpoint adds an application surface reachable from the assessed network; impact depends on application design and access controls.",
+      "remediation": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application.",
+      "port": 443,
+      "evidence": [
+        "Enumeration reported TCP port 443 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST SP 800-53 Rev. 5, SC-7: Boundary Protection",
+        "OWASP Application Security Verification Standard (ASVS)"
+      ]
+    },
+    {
+      "id": "OFF-a71cd7597ff3",
+      "title": "Service version requires patch-status review",
+      "severity": "Informational",
+      "confidence": "Potential",
+      "target": "192.168.88.22",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration disclosed a product version. This module does not compare it with vendor advisories and cannot determine whether it is outdated or vulnerable.",
+      "attack_scenario": "An authorized assessor could compare the observed product and version with the vendor's official lifecycle and security advisories.",
+      "impact": "Unsupported or unpatched software may retain known issues; that condition is not established by this assessment.",
+      "remediation": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed.",
+      "port": 443,
+      "evidence": [
+        "Enumeration reported TCP port 443 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST National Vulnerability Database (NVD), for version-specific advisory review",
+        "Product vendor's official security advisories and lifecycle notices"
+      ]
+    },
+    {
+      "id": "OFF-bb19adaea9c1",
+      "title": "Exposed network service: http",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.23",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 80,
+      "evidence": [
+        "Enumeration reported TCP port 80 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-1e890b037920",
+      "title": "Cleartext-capable protocol exposed",
+      "severity": "Low",
+      "confidence": "Confirmed",
+      "target": "192.168.88.23",
+      "protocol": "tcp",
+      "service": "HTTP",
+      "description": "The observed HTTP service may transmit data or credentials without transport encryption. Enumeration did not verify application-level settings.",
+      "attack_scenario": "An authorized tester could verify with non-sensitive test traffic whether the service negotiates encryption and protects communications on this path.",
+      "impact": "Where encryption is absent, network observers may be able to read or alter traffic in transit, depending on protocol and network position.",
+      "remediation": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext.",
+      "port": 80,
+      "evidence": [
+        "Enumeration reported TCP port 80 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST SP 800-53 Rev. 5, SC-8: Transmission Confidentiality and Integrity"
+      ]
+    },
+    {
+      "id": "OFF-6e3ad907c95a",
+      "title": "Web service exposed",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.23",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration indicates a web endpoint. This does not establish an application vulnerability or whether broader network access is intended.",
+      "attack_scenario": "An authorized tester could review the endpoint's intended audience, authentication boundaries, transport security, and application configuration.",
+      "impact": "The endpoint adds an application surface reachable from the assessed network; impact depends on application design and access controls.",
+      "remediation": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application.",
+      "port": 80,
+      "evidence": [
+        "Enumeration reported TCP port 80 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST SP 800-53 Rev. 5, SC-7: Boundary Protection",
+        "OWASP Application Security Verification Standard (ASVS)"
+      ]
+    },
+    {
+      "id": "OFF-4917e87860d7",
+      "title": "Service version requires patch-status review",
+      "severity": "Informational",
+      "confidence": "Potential",
+      "target": "192.168.88.23",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration disclosed a product version. This module does not compare it with vendor advisories and cannot determine whether it is outdated or vulnerable.",
+      "attack_scenario": "An authorized assessor could compare the observed product and version with the vendor's official lifecycle and security advisories.",
+      "impact": "Unsupported or unpatched software may retain known issues; that condition is not established by this assessment.",
+      "remediation": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed.",
+      "port": 80,
+      "evidence": [
+        "Enumeration reported TCP port 80 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST National Vulnerability Database (NVD), for version-specific advisory review",
+        "Product vendor's official security advisories and lifecycle notices"
+      ]
+    },
+    {
+      "id": "OFF-ca47312d40e2",
+      "title": "Exposed network service: http",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.23",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 443,
+      "evidence": [
+        "Enumeration reported TCP port 443 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-aa519dc1fac0",
+      "title": "Cleartext-capable protocol exposed",
+      "severity": "Low",
+      "confidence": "Confirmed",
+      "target": "192.168.88.23",
+      "protocol": "tcp",
+      "service": "HTTP",
+      "description": "The observed HTTP service may transmit data or credentials without transport encryption. Enumeration did not verify application-level settings.",
+      "attack_scenario": "An authorized tester could verify with non-sensitive test traffic whether the service negotiates encryption and protects communications on this path.",
+      "impact": "Where encryption is absent, network observers may be able to read or alter traffic in transit, depending on protocol and network position.",
+      "remediation": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext.",
+      "port": 443,
+      "evidence": [
+        "Enumeration reported TCP port 443 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST SP 800-53 Rev. 5, SC-8: Transmission Confidentiality and Integrity"
+      ]
+    },
+    {
+      "id": "OFF-45bb3b33e6f5",
+      "title": "Web service exposed",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.23",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration indicates a web endpoint. This does not establish an application vulnerability or whether broader network access is intended.",
+      "attack_scenario": "An authorized tester could review the endpoint's intended audience, authentication boundaries, transport security, and application configuration.",
+      "impact": "The endpoint adds an application surface reachable from the assessed network; impact depends on application design and access controls.",
+      "remediation": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application.",
+      "port": 443,
+      "evidence": [
+        "Enumeration reported TCP port 443 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST SP 800-53 Rev. 5, SC-7: Boundary Protection",
+        "OWASP Application Security Verification Standard (ASVS)"
+      ]
+    },
+    {
+      "id": "OFF-a1165b210759",
+      "title": "Service version requires patch-status review",
+      "severity": "Informational",
+      "confidence": "Potential",
+      "target": "192.168.88.23",
+      "protocol": "tcp",
+      "service": "http",
+      "description": "Enumeration disclosed a product version. This module does not compare it with vendor advisories and cannot determine whether it is outdated or vulnerable.",
+      "attack_scenario": "An authorized assessor could compare the observed product and version with the vendor's official lifecycle and security advisories.",
+      "impact": "Unsupported or unpatched software may retain known issues; that condition is not established by this assessment.",
+      "remediation": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed.",
+      "port": 443,
+      "evidence": [
+        "Enumeration reported TCP port 443 as open.",
+        "Reported service: http.",
+        "Reported product: BusyBox http.",
+        "Reported version: 1.19.4."
+      ],
+      "references": [
+        "NIST National Vulnerability Database (NVD), for version-specific advisory review",
+        "Product vendor's official security advisories and lifecycle notices"
+      ]
+    },
+    {
+      "id": "OFF-1eb939a0308a",
+      "title": "Exposed network service: msrpc",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "msrpc",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 135,
+      "evidence": [
+        "Enumeration reported TCP port 135 as open.",
+        "Reported service: msrpc.",
+        "Reported product: Microsoft Windows RPC."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-67d043df4913",
+      "title": "Service identification is incomplete",
+      "severity": "Informational",
+      "confidence": "Informational",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "msrpc",
+      "description": "Enumeration did not provide a complete service, product, and version identification. No vulnerability is inferred from this gap.",
+      "attack_scenario": "An authorized tester could use approved, non-invasive identification methods to confirm the asset inventory and determine relevant vendor advisories.",
+      "impact": "Incomplete identification can make patch and exposure reviews less reliable.",
+      "remediation": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current.",
+      "port": 135,
+      "evidence": [
+        "Enumeration reported TCP port 135 as open.",
+        "Reported service: msrpc.",
+        "Reported product: Microsoft Windows RPC."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 2: Inventory and Control of Software Assets"
+      ]
+    },
+    {
+      "id": "OFF-eb7dd617515e",
+      "title": "Exposed network service: netbios-ssn",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "netbios-ssn",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 139,
+      "evidence": [
+        "Enumeration reported TCP port 139 as open.",
+        "Reported service: netbios-ssn.",
+        "Reported product: Microsoft Windows netbios-ssn."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-6a5546e21efb",
+      "title": "Service identification is incomplete",
+      "severity": "Informational",
+      "confidence": "Informational",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "netbios-ssn",
+      "description": "Enumeration did not provide a complete service, product, and version identification. No vulnerability is inferred from this gap.",
+      "attack_scenario": "An authorized tester could use approved, non-invasive identification methods to confirm the asset inventory and determine relevant vendor advisories.",
+      "impact": "Incomplete identification can make patch and exposure reviews less reliable.",
+      "remediation": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current.",
+      "port": 139,
+      "evidence": [
+        "Enumeration reported TCP port 139 as open.",
+        "Reported service: netbios-ssn.",
+        "Reported product: Microsoft Windows netbios-ssn."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 2: Inventory and Control of Software Assets"
+      ]
+    },
+    {
+      "id": "OFF-509dc168c54a",
+      "title": "Exposed network service: microsoft-ds",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "microsoft-ds",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 445,
+      "evidence": [
+        "Enumeration reported TCP port 445 as open.",
+        "Reported service: microsoft-ds."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-54e7185c528a",
+      "title": "Service identification is incomplete",
+      "severity": "Informational",
+      "confidence": "Informational",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "microsoft-ds",
+      "description": "Enumeration did not provide a complete service, product, and version identification. No vulnerability is inferred from this gap.",
+      "attack_scenario": "An authorized tester could use approved, non-invasive identification methods to confirm the asset inventory and determine relevant vendor advisories.",
+      "impact": "Incomplete identification can make patch and exposure reviews less reliable.",
+      "remediation": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current.",
+      "port": 445,
+      "evidence": [
+        "Enumeration reported TCP port 445 as open.",
+        "Reported service: microsoft-ds."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 2: Inventory and Control of Software Assets"
+      ]
+    }
+  ],
+  "Attack Scenarios": [
+    {
+      "finding_id": "OFF-73158360ad5f",
+      "target": "192.168.88.22",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.22"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/80)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: http"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-36c81b528064",
+      "target": "192.168.88.22",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.22"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "HTTP (tcp/80)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Cleartext-capable protocol exposed"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Where encryption is absent, network observers may be able to read or alter traffic in transit, depending on protocol and network position."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-88185fae6b0a",
+      "target": "192.168.88.22",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.22"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/80)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Web service exposed"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "The endpoint adds an application surface reachable from the assessed network; impact depends on application design and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-7df49178398f",
+      "target": "192.168.88.22",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.22"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/80)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service version requires patch-status review"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Unsupported or unpatched software may retain known issues; that condition is not established by this assessment."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-980613944e50",
+      "target": "192.168.88.22",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.22"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/443)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: http"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-27954e22f17e",
+      "target": "192.168.88.22",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.22"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "HTTP (tcp/443)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Cleartext-capable protocol exposed"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Where encryption is absent, network observers may be able to read or alter traffic in transit, depending on protocol and network position."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-bdb8b5dbfe79",
+      "target": "192.168.88.22",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.22"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/443)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Web service exposed"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "The endpoint adds an application surface reachable from the assessed network; impact depends on application design and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-a71cd7597ff3",
+      "target": "192.168.88.22",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.22"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/443)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service version requires patch-status review"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Unsupported or unpatched software may retain known issues; that condition is not established by this assessment."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-bb19adaea9c1",
+      "target": "192.168.88.23",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.23"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/80)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: http"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-1e890b037920",
+      "target": "192.168.88.23",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.23"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "HTTP (tcp/80)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Cleartext-capable protocol exposed"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Where encryption is absent, network observers may be able to read or alter traffic in transit, depending on protocol and network position."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-6e3ad907c95a",
+      "target": "192.168.88.23",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.23"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/80)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Web service exposed"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "The endpoint adds an application surface reachable from the assessed network; impact depends on application design and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-4917e87860d7",
+      "target": "192.168.88.23",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.23"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/80)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service version requires patch-status review"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Unsupported or unpatched software may retain known issues; that condition is not established by this assessment."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-ca47312d40e2",
+      "target": "192.168.88.23",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.23"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/443)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: http"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-aa519dc1fac0",
+      "target": "192.168.88.23",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.23"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "HTTP (tcp/443)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Cleartext-capable protocol exposed"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Where encryption is absent, network observers may be able to read or alter traffic in transit, depending on protocol and network position."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-45bb3b33e6f5",
+      "target": "192.168.88.23",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.23"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/443)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Web service exposed"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "The endpoint adds an application surface reachable from the assessed network; impact depends on application design and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-a1165b210759",
+      "target": "192.168.88.23",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.23"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "http (tcp/443)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service version requires patch-status review"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Unsupported or unpatched software may retain known issues; that condition is not established by this assessment."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-1eb939a0308a",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "msrpc (tcp/135)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: msrpc"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-67d043df4913",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "msrpc (tcp/135)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service identification is incomplete"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Incomplete identification can make patch and exposure reviews less reliable."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-eb7dd617515e",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "netbios-ssn (tcp/139)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: netbios-ssn"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-6a5546e21efb",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "netbios-ssn (tcp/139)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service identification is incomplete"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Incomplete identification can make patch and exposure reviews less reliable."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-509dc168c54a",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "microsoft-ds (tcp/445)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: microsoft-ds"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-54e7185c528a",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "microsoft-ds (tcp/445)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service identification is incomplete"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Incomplete identification can make patch and exposure reviews less reliable."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current."
+        }
+      ]
+    }
+  ],
+  "Defensive Recommendations": [
+    {
+      "finding_id": "OFF-73158360ad5f",
+      "target": "192.168.88.22",
+      "recommendation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+    },
+    {
+      "finding_id": "OFF-36c81b528064",
+      "target": "192.168.88.22",
+      "recommendation": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext."
+    },
+    {
+      "finding_id": "OFF-88185fae6b0a",
+      "target": "192.168.88.22",
+      "recommendation": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application."
+    },
+    {
+      "finding_id": "OFF-7df49178398f",
+      "target": "192.168.88.22",
+      "recommendation": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed."
+    },
+    {
+      "finding_id": "OFF-bb19adaea9c1",
+      "target": "192.168.88.23",
+      "recommendation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+    },
+    {
+      "finding_id": "OFF-1e890b037920",
+      "target": "192.168.88.23",
+      "recommendation": "Prefer an encrypted alternative or enforce secure transport, restrict access, and avoid sending credentials or sensitive data in cleartext."
+    },
+    {
+      "finding_id": "OFF-6e3ad907c95a",
+      "target": "192.168.88.23",
+      "recommendation": "Limit access to intended users and networks, use HTTPS for sensitive traffic, and maintain the web server and application."
+    },
+    {
+      "finding_id": "OFF-4917e87860d7",
+      "target": "192.168.88.23",
+      "recommendation": "Verify the version with the system owner, check official vendor advisories and support status, and apply approved updates where needed."
+    },
+    {
+      "finding_id": "OFF-1eb939a0308a",
+      "target": "192.168.88.38",
+      "recommendation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+    },
+    {
+      "finding_id": "OFF-67d043df4913",
+      "target": "192.168.88.38",
+      "recommendation": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current."
+    }
+  ],
+  "Assessment Limitations": [
+    "Enumeration status was PARTIAL. Open ports and service details could not be collected reliably.",
+    "Host 192.168.88.1 enumeration status was TIMEOUT.",
+    "Host 192.168.88.6 enumeration status was TIMEOUT.",
+    "Host 192.168.88.7 enumeration status was TIMEOUT.",
+    "Host 192.168.88.12 enumeration status was TIMEOUT.",
+    "Host 192.168.88.24 enumeration status was TIMEOUT.",
+    "Host 192.168.88.31 enumeration status was TIMEOUT.",
+    "Host 192.168.88.250 enumeration status was TIMEOUT.",
+    "Vulnerability assessment status was INCOMPLETE. Security assessment results may be incomplete or unavailable.",
+    "Assessment is limited to the hosts, ports, and service details returned by enumeration.",
+    "An empty finding list does not prove that a host or network is secure.",
+    "No external vulnerability database or vendor advisory feed is consulted."
+  ],
+  "errors": [
+    "Nmap enumeration timed out."
+  ],
+  "Final Statistics": {
+    "Hosts discovered": 16,
+    "Hosts assessed": 9,
+    "Open ports": 7,
+    "Services identified": 7,
+    "Informational findings": 18,
+    "Low findings": 4,
+    "Medium findings": 0,
+    "High findings": 0,
+    "Critical findings": 0
+  }
+}

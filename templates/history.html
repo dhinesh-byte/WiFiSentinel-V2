@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f2f6f2">
+    {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
+    <title>Scan history | WiFi Sentinel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/overview.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+    <script src="{{ url_for('static', filename='js/history.js') }}" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="WiFi Sentinel overview">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span>WiFi <strong>Sentinel</strong></span>
+        </a>
+        <nav class="product-nav" aria-label="Product navigation">
+            <a href="/">Overview</a>
+            <a class="is-current" href="/history" aria-current="page">History</a>
+            <a href="/defensive">Defensive</a>
+            <a href="/offensive/">Offensive</a>
+        </nav>
+        {% if auth_enabled %}
+        <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Sign out</button>
+        </form>
+        {% endif %}
+    </header>
+
+    <main class="page-shell history-shell">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">SECURITY OPERATIONS <span>/</span> RECORDS</p>
+                <h1>Scan history</h1>
+                <p class="subtitle">Search saved results, inspect coverage, export reports, or compare two runs.</p>
+            </div>
+            <a class="back-link" href="/">Workspace overview <span aria-hidden="true">&#8599;</span></a>
+        </section>
+
+        <section class="history-toolbar" aria-label="Filter scan history">
+            <label class="search-control" for="history-search">
+                <span>SEARCH</span>
+                <input id="history-search" type="search" placeholder="Target, module, date, status" autocomplete="off">
+            </label>
+            <label class="filter-control" for="module-filter">
+                <span>MODULE</span>
+                <select id="module-filter">
+                    <option value="all">All modules</option>
+                    <option value="defensive">Defensive</option>
+                    <option value="offensive">Offensive</option>
+                </select>
+            </label>
+            <label class="filter-control" for="status-filter">
+                <span>STATUS</span>
+                <select id="status-filter">
+                    <option value="all">All statuses</option>
+                    <option value="completed">Completed</option>
+                    <option value="partial">Partial</option>
+                    <option value="failed">Failed / error</option>
+                </select>
+            </label>
+            <button class="toolbar-button" id="export-csv" type="button">Export CSV</button>
+            <button class="toolbar-button compare-button" id="compare-scans" type="button" disabled>Compare selected <span id="selection-count">0/2</span></button>
+        </section>
+        <p class="selection-hint" id="selection-hint" aria-live="polite">Select two scans to compare their coverage and results.</p>
+
+        <section class="activity history-activity" aria-label="Saved scans and reports">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th aria-label="Select"></th><th>MODULE</th><th>TARGET</th><th>DATE</th><th>COVERAGE</th><th>RESULT</th><th>STATUS</th><th>LIMITATIONS</th><th>ACTIONS</th></tr>
+                    </thead>
+                    <tbody id="history-rows">
+                        {% for scan in activity %}
+                        <tr data-record-index="{{ loop.index0 }}">
+                            <td><input class="scan-select" type="checkbox" aria-label="Select scan for comparison"></td>
+                            <td><span class="module-tag {{ scan.module_key }}">{{ scan.module }}</span></td>
+                            <td class="target-cell">{{ scan.target }}</td>
+                            <td class="date-cell">{{ scan.timestamp[:16].replace('T', ' ') if scan.timestamp else 'Date unavailable' }}</td>
+                            <td>{{ scan.coverage }}</td>
+                            <td>{{ scan.detail }}</td>
+                            <td><span class="status-tag status-{{ scan.status|lower|replace(' ', '-') }}">{{ scan.status }}</span></td>
+                            <td class="limitation-cell">{% if scan.limitations %}{{ scan.limitations|length }} noted{% elif not scan.detail_available %}Summary only{% else %}None{% endif %}</td>
+                            <td class="actions-cell">
+                                <a href="{{ scan.detail_url }}">Details</a>
+                                {% if scan.export_url %}<a href="{{ scan.export_url }}">JSON</a>{% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td class="empty-state" colspan="9">No saved scans yet. Completed runs will appear here.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p class="no-filter-results" id="no-filter-results" hidden>No records match these filters.</p>
+        </section>
+        <footer>WiFi Sentinel <span>LOCAL SECURITY WORKSPACE</span></footer>
+    </main>
+
+    <dialog id="comparison-dialog" class="comparison-dialog" aria-labelledby="comparison-title">
+        <form method="dialog" class="dialog-close"><button aria-label="Close comparison">Close</button></form>
+        <p class="eyebrow">RUN-TO-RUN REVIEW</p>
+        <h2 id="comparison-title">Compare scans</h2>
+        <div class="comparison-table-wrap"><table id="comparison-table"></table></div>
+        <p class="comparison-note">Differences can reflect target availability, scan options, or network changes; they are not proof of a security regression.</p>
+    </dialog>
+
+    <script id="history-data" type="application/json">{{ activity|tojson }}</script>
+</body>
+</html>

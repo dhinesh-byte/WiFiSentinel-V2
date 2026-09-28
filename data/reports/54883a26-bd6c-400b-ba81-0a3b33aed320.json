@@ -1,0 +1,14 @@
+{
+  "id": "54883a26-bd6c-400b-ba81-0a3b33aed320",
+  "target": "100.71.192.255/24",
+  "timestamp": "2026-09-27T15:09:54",
+  "duration": 119.6,
+  "status": "error",
+  "hosts_discovered": 0,
+  "hosts_scanned": 0,
+  "open_ports": 0,
+  "risks": 0,
+  "devices": [],
+  "limitations": [],
+  "error": "Discovery timed out after 120 seconds."
+}

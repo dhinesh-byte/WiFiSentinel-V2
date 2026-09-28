@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f2f6f2">
+    {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
+    <title>WiFi Sentinel | Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/overview.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="WiFi Sentinel overview">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span>WiFi <strong>Sentinel</strong></span>
+        </a>
+        <nav class="product-nav" aria-label="Product navigation">
+            <a class="is-current" href="/" aria-current="page">Overview</a>
+            <a href="/history">History</a>
+            <a href="/defensive">Defensive</a>
+            <a href="/offensive/">Offensive</a>
+        </nav>
+        {% if auth_enabled %}
+        <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Sign out</button>
+        </form>
+        {% endif %}
+    </header>
+
+    <main class="page-shell">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">SECURITY OPERATIONS <span>/</span> WORKSPACE</p>
+                <h1>Security overview</h1>
+                <p class="subtitle">A unified view of saved network scans and assessment reports.</p>
+            </div>
+            <span class="system-state"><i></i> LOCAL CONSOLE</span>
+        </section>
+
+        <section class="launch-row" aria-label="Start a scan">
+            <div>
+                <p class="eyebrow">READY WHEN YOU ARE</p>
+                <h2>Choose an assessment workflow</h2>
+            </div>
+            <div class="launch-actions">
+                <a class="button button-secondary" href="/defensive">Open defensive scanner <span aria-hidden="true">&#8594;</span></a>
+                <a class="button button-primary" href="/offensive/">Start authorized assessment <span aria-hidden="true">&#8594;</span></a>
+            </div>
+        </section>
+
+        <section class="metrics" aria-label="Saved activity summary">
+            <article class="metric">
+                <span class="metric-label">DEFENSIVE SCANS</span>
+                <strong>{{ defensive_scan_count }}</strong>
+                <span class="metric-note">Saved scan history</span>
+            </article>
+            <article class="metric">
+                <span class="metric-label">LATEST DEVICES</span>
+                <strong>{{ latest_device_count }}</strong>
+                <span class="metric-note">Most recent defensive scan</span>
+            </article>
+            <article class="metric">
+                <span class="metric-label">OFFENSIVE REPORTS</span>
+                <strong>{{ offensive_report_count }}</strong>
+                <span class="metric-note">Saved assessment reports</span>
+            </article>
+            <article class="metric metric-findings">
+                <span class="metric-label">REPORTED FINDINGS</span>
+                <strong>{{ offensive_finding_count }}</strong>
+                <span class="metric-note">Across saved reports</span>
+            </article>
+        </section>
+
+        <section class="freshness-grid" aria-label="Latest scan freshness and coverage">
+            {% for key in ['defensive', 'offensive'] %}
+            <article class="freshness-panel">
+                <div class="freshness-heading">
+                    <div>
+                        <p class="eyebrow">{{ freshness[key].module|upper }} MODULE</p>
+                        <h2>{{ freshness[key].status }}</h2>
+                    </div>
+                    <span class="freshness-age">{% if freshness[key].stale_days is none %}NOT RUN{% elif freshness[key].stale_days == 0 %}TODAY{% elif freshness[key].stale_days == 1 %}YESTERDAY{% else %}{{ freshness[key].stale_days }} DAYS AGO{% endif %}</span>
+                </div>
+                <p class="freshness-date">Last run: {{ freshness[key].last_run }}</p>
+                <p class="freshness-coverage">Coverage <strong>{{ freshness[key].coverage }}</strong></p>
+                {% if freshness[key].limitations %}
+                <p class="freshness-limit">{{ freshness[key].limitations|join('; ') }}</p>
+                {% else %}
+                <p class="freshness-limit">No recorded limitations.</p>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </section>
+
+        <section class="activity" aria-labelledby="activity-title">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">WORKSPACE ACTIVITY</p>
+                    <h2 id="activity-title">Recent scans and reports</h2>
+                </div>
+                <a class="activity-count" href="/history">OPEN SCAN HISTORY &#8599;</a>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>MODULE</th><th>TARGET</th><th>DATE</th><th>RESULT</th><th>STATUS</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in recent_scans %}
+                        <tr>
+                            <td><span class="module-tag {{ scan.module|lower }}">{{ scan.module }}</span></td>
+                            <td class="target-cell">{{ scan.target }}</td>
+                            <td class="date-cell">{{ scan.timestamp[:16].replace('T', ' ') if scan.timestamp else 'Date unavailable' }}</td>
+                            <td>{{ scan.detail }}</td>
+                            <td><span class="status-tag">{{ scan.status }}</span></td>
+                            <td><a class="row-link" href="{{ scan.detail_url }}">Details <span aria-hidden="true">&#8599;</span></a></td>
+                        </tr>
+                        {% else %}
+                        <tr><td class="empty-state" colspan="6">No saved activity yet. Start a scan to see results here.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <footer>WiFi Sentinel <span>LOCAL SECURITY WORKSPACE</span></footer>
+    </main>
+</body>
+</html>

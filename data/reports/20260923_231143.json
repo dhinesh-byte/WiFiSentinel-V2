@@ -1,0 +1,363 @@
+{
+    "timestamp": "2026-09-23T23:11:43.617447",
+    "network": "192.168.88.17/24",
+    "device_count": 17,
+    "devices": [
+        {
+            "ip": "192.168.88.1",
+            "hostname": "Unknown",
+            "mac": "50:3D:D1:32:2D:4C",
+            "status": "UP",
+            "ports": [
+                {
+                    "port": 22,
+                    "protocol": "TCP",
+                    "service": "ssh",
+                    "version": "Dropbear sshd 2020.80 (protocol 2.0)"
+                },
+                {
+                    "port": 23,
+                    "protocol": "TCP",
+                    "service": "telnet",
+                    "version": "BusyBox telnetd 1.14.0 or later (TP-LINK ADSL2+ router telnetd)"
+                },
+                {
+                    "port": 53,
+                    "protocol": "TCP",
+                    "service": "domain",
+                    "version": "dnsmasq 2.89"
+                },
+                {
+                    "port": 80,
+                    "protocol": "TCP",
+                    "service": "http",
+                    "version": ""
+                },
+                {
+                    "port": 1900,
+                    "protocol": "TCP",
+                    "service": "upnp",
+                    "version": "Portable SDK for UPnP devices 1.6.19 (Linux 4.4.60; UPnP 1.0)"
+                }
+            ],
+            "risk": {
+                "score": 60,
+                "level": "HIGH",
+                "reasons": [
+                    "SSH service is exposed.",
+                    "Telnet is exposed and should generally be avoided.",
+                    "HTTP service is exposed."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.3",
+            "hostname": "Unknown",
+            "mac": "50:3D:D1:32:45:37",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.5",
+            "hostname": "Unknown",
+            "mac": "3C:EF:8C:53:01:16",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.8",
+            "hostname": "Unknown",
+            "mac": "BC:D2:2C:1A:CF:5C",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.14",
+            "hostname": "Unknown",
+            "mac": "1A:4D:FF:B7:D2:06",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.21",
+            "hostname": "Unknown",
+            "mac": "D0:39:57:A9:D6:B9",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.22",
+            "hostname": "Unknown",
+            "mac": "40:ED:00:55:53:A5",
+            "status": "UP",
+            "ports": [
+                {
+                    "port": 80,
+                    "protocol": "TCP",
+                    "service": "http",
+                    "version": "BusyBox http 1.19.4"
+                },
+                {
+                    "port": 443,
+                    "protocol": "TCP",
+                    "service": "ssl/http",
+                    "version": "BusyBox http 1.19.4"
+                }
+            ],
+            "risk": {
+                "score": 10,
+                "level": "LOW",
+                "reasons": [
+                    "HTTP service is exposed."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.23",
+            "hostname": "Unknown",
+            "mac": "5C:62:8B:AF:2D:B2",
+            "status": "UP",
+            "ports": [
+                {
+                    "port": 80,
+                    "protocol": "TCP",
+                    "service": "http",
+                    "version": "BusyBox http 1.19.4"
+                },
+                {
+                    "port": 443,
+                    "protocol": "TCP",
+                    "service": "ssl/http",
+                    "version": "BusyBox http 1.19.4"
+                }
+            ],
+            "risk": {
+                "score": 10,
+                "level": "LOW",
+                "reasons": [
+                    "HTTP service is exposed."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.26",
+            "hostname": "Unknown",
+            "mac": "50:BB:B5:36:18:B2",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.31",
+            "hostname": "Unknown",
+            "mac": "34:60:F9:05:AA:39",
+            "status": "UP",
+            "ports": [
+                {
+                    "port": 22,
+                    "protocol": "TCP",
+                    "service": "ssh",
+                    "version": "Dropbear sshd 2020.80 (protocol 2.0)"
+                },
+                {
+                    "port": 23,
+                    "protocol": "TCP",
+                    "service": "telnet",
+                    "version": "BusyBox telnetd 1.14.0 or later (TP-LINK router telnetd)"
+                },
+                {
+                    "port": 80,
+                    "protocol": "TCP",
+                    "service": "http",
+                    "version": ""
+                },
+                {
+                    "port": 1900,
+                    "protocol": "TCP",
+                    "service": "upnp",
+                    "version": "Portable SDK for UPnP devices 1.6.19 (Linux 4.1.52; UPnP 1.0)"
+                }
+            ],
+            "risk": {
+                "score": 60,
+                "level": "HIGH",
+                "reasons": [
+                    "SSH service is exposed.",
+                    "Telnet is exposed and should generally be avoided.",
+                    "HTTP service is exposed."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.32",
+            "hostname": "Unknown",
+            "mac": "A2:36:90:33:F6:8A",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.37",
+            "hostname": "Unknown",
+            "mac": "42:28:50:A4:6E:8B",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.38",
+            "hostname": "Unknown",
+            "mac": "04:7B:CB:CD:0E:32",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.44",
+            "hostname": "Unknown",
+            "mac": "7E:62:AC:E3:89:61",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.45",
+            "hostname": "Unknown",
+            "mac": "7A:49:05:EB:7A:82",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.250",
+            "hostname": "Unknown",
+            "mac": "28:18:FD:1F:A6:A5",
+            "status": "UP",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "192.168.88.17",
+            "hostname": "Unknown",
+            "mac": "Unknown",
+            "status": "UP",
+            "ports": [
+                {
+                    "port": 135,
+                    "protocol": "TCP",
+                    "service": "msrpc",
+                    "version": "Microsoft Windows RPC"
+                },
+                {
+                    "port": 139,
+                    "protocol": "TCP",
+                    "service": "netbios-ssn",
+                    "version": "Microsoft Windows netbios-ssn"
+                },
+                {
+                    "port": 445,
+                    "protocol": "TCP",
+                    "service": "microsoft-ds?",
+                    "version": ""
+                },
+                {
+                    "port": 3306,
+                    "protocol": "TCP",
+                    "service": "mysql?",
+                    "version": ""
+                },
+                {
+                    "port": 5357,
+                    "protocol": "TCP",
+                    "service": "http",
+                    "version": "Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)"
+                }
+            ],
+            "risk": {
+                "score": 55,
+                "level": "HIGH",
+                "reasons": [
+                    "SMB service is exposed.",
+                    "MySQL service is exposed."
+                ]
+            }
+        }
+    ]
+}

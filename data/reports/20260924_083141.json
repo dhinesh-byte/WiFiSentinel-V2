@@ -1,0 +1,82 @@
+{
+    "timestamp": "2026-09-24T08:31:41.625017",
+    "network": "10.160.135.51/24",
+    "device_count": 3,
+    "devices": [
+        {
+            "ip": "10.160.135.51",
+            "hostname": "dhinesh",
+            "mac": "Not available",
+            "status": "ONLINE",
+            "ports": [
+                {
+                    "port": 135,
+                    "protocol": "TCP",
+                    "service": "msrpc",
+                    "version": "Microsoft Windows RPC"
+                },
+                {
+                    "port": 139,
+                    "protocol": "TCP",
+                    "service": "netbios-ssn",
+                    "version": "Microsoft Windows netbios-ssn"
+                },
+                {
+                    "port": 445,
+                    "protocol": "TCP",
+                    "service": "microsoft-ds?",
+                    "version": ""
+                },
+                {
+                    "port": 3306,
+                    "protocol": "TCP",
+                    "service": "mysql?",
+                    "version": ""
+                }
+            ],
+            "risk": {
+                "score": 55,
+                "level": "HIGH",
+                "reasons": [
+                    "SMB service is exposed.",
+                    "MySQL service is exposed."
+                ]
+            }
+        },
+        {
+            "ip": "10.160.135.205",
+            "hostname": "Not available",
+            "mac": "5E:78:1B:AC:D0:39",
+            "status": "ONLINE",
+            "ports": [
+                {
+                    "port": 53,
+                    "protocol": "TCP",
+                    "service": "domain",
+                    "version": "dnsmasq 2.51"
+                }
+            ],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "10.160.135.247",
+            "hostname": "Not available",
+            "mac": "CE:E3:C0:4A:AB:91",
+            "status": "ONLINE",
+            "ports": [],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        }
+    ]
+}

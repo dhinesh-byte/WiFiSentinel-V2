@@ -1,0 +1,371 @@
+{
+  "report_title": "WiFi Sentinel V2.0 - Offensive Security Assessment",
+  "assessment_status": "COMPLETED",
+  "Executive Summary": "Assessment completed with 6 reported security finding(s). Finding severity and confidence reflect the supplied evidence.",
+  "Scan Information": {
+    "target": "192.168.88.38",
+    "scan_type": "offensive",
+    "report_id": "88fe6d24-d467-4cbb-84c9-f6aab44883d6",
+    "discovery_status": "COMPLETED",
+    "enumeration_status": "COMPLETED",
+    "vulnerability_assessment_status": "COMPLETED",
+    "report_generated_at": "2026-09-27T07:14:44+00:00"
+  },
+  "Hosts Assessed": [
+    {
+      "target": "192.168.88.38",
+      "hostname": null,
+      "status": "COMPLETED",
+      "open_ports": 3,
+      "services_identified": 3
+    }
+  ],
+  "Services Discovered": [
+    {
+      "target": "192.168.88.38",
+      "port": 135,
+      "protocol": "tcp",
+      "service": "msrpc",
+      "product": "Microsoft Windows RPC",
+      "version": null,
+      "state": "open"
+    },
+    {
+      "target": "192.168.88.38",
+      "port": 139,
+      "protocol": "tcp",
+      "service": "netbios-ssn",
+      "product": "Microsoft Windows netbios-ssn",
+      "version": null,
+      "state": "open"
+    },
+    {
+      "target": "192.168.88.38",
+      "port": 445,
+      "protocol": "tcp",
+      "service": "microsoft-ds",
+      "product": null,
+      "version": null,
+      "state": "open"
+    }
+  ],
+  "Security Findings": [
+    {
+      "id": "OFF-1eb939a0308a",
+      "title": "Exposed network service: msrpc",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "msrpc",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 135,
+      "evidence": [
+        "Enumeration reported TCP port 135 as open.",
+        "Reported service: msrpc.",
+        "Reported product: Microsoft Windows RPC."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-67d043df4913",
+      "title": "Service identification is incomplete",
+      "severity": "Informational",
+      "confidence": "Informational",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "msrpc",
+      "description": "Enumeration did not provide a complete service, product, and version identification. No vulnerability is inferred from this gap.",
+      "attack_scenario": "An authorized tester could use approved, non-invasive identification methods to confirm the asset inventory and determine relevant vendor advisories.",
+      "impact": "Incomplete identification can make patch and exposure reviews less reliable.",
+      "remediation": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current.",
+      "port": 135,
+      "evidence": [
+        "Enumeration reported TCP port 135 as open.",
+        "Reported service: msrpc.",
+        "Reported product: Microsoft Windows RPC."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 2: Inventory and Control of Software Assets"
+      ]
+    },
+    {
+      "id": "OFF-eb7dd617515e",
+      "title": "Exposed network service: netbios-ssn",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "netbios-ssn",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 139,
+      "evidence": [
+        "Enumeration reported TCP port 139 as open.",
+        "Reported service: netbios-ssn.",
+        "Reported product: Microsoft Windows netbios-ssn."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-6a5546e21efb",
+      "title": "Service identification is incomplete",
+      "severity": "Informational",
+      "confidence": "Informational",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "netbios-ssn",
+      "description": "Enumeration did not provide a complete service, product, and version identification. No vulnerability is inferred from this gap.",
+      "attack_scenario": "An authorized tester could use approved, non-invasive identification methods to confirm the asset inventory and determine relevant vendor advisories.",
+      "impact": "Incomplete identification can make patch and exposure reviews less reliable.",
+      "remediation": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current.",
+      "port": 139,
+      "evidence": [
+        "Enumeration reported TCP port 139 as open.",
+        "Reported service: netbios-ssn.",
+        "Reported product: Microsoft Windows netbios-ssn."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 2: Inventory and Control of Software Assets"
+      ]
+    },
+    {
+      "id": "OFF-509dc168c54a",
+      "title": "Exposed network service: microsoft-ds",
+      "severity": "Informational",
+      "confidence": "Confirmed",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "microsoft-ds",
+      "description": "Enumeration reported this service as open from the scan vantage point. The results do not establish whether it is necessary or appropriately restricted.",
+      "attack_scenario": "An authorized tester could verify that the service is intended to be reachable from this network segment and review its access controls.",
+      "impact": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls.",
+      "remediation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed.",
+      "port": 445,
+      "evidence": [
+        "Enumeration reported TCP port 445 as open.",
+        "Reported service: microsoft-ds."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 4: Secure Configuration of Enterprise Assets and Software"
+      ]
+    },
+    {
+      "id": "OFF-54e7185c528a",
+      "title": "Service identification is incomplete",
+      "severity": "Informational",
+      "confidence": "Informational",
+      "target": "192.168.88.38",
+      "protocol": "tcp",
+      "service": "microsoft-ds",
+      "description": "Enumeration did not provide a complete service, product, and version identification. No vulnerability is inferred from this gap.",
+      "attack_scenario": "An authorized tester could use approved, non-invasive identification methods to confirm the asset inventory and determine relevant vendor advisories.",
+      "impact": "Incomplete identification can make patch and exposure reviews less reliable.",
+      "remediation": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current.",
+      "port": 445,
+      "evidence": [
+        "Enumeration reported TCP port 445 as open.",
+        "Reported service: microsoft-ds."
+      ],
+      "references": [
+        "CIS Critical Security Controls v8, Control 2: Inventory and Control of Software Assets"
+      ]
+    }
+  ],
+  "Attack Scenarios": [
+    {
+      "finding_id": "OFF-1eb939a0308a",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "msrpc (tcp/135)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: msrpc"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-67d043df4913",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "msrpc (tcp/135)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service identification is incomplete"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Incomplete identification can make patch and exposure reviews less reliable."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-eb7dd617515e",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "netbios-ssn (tcp/139)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: netbios-ssn"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-6a5546e21efb",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "netbios-ssn (tcp/139)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service identification is incomplete"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Incomplete identification can make patch and exposure reviews less reliable."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-509dc168c54a",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "microsoft-ds (tcp/445)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Exposed network service: microsoft-ds"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "An exposed service increases the reachable network surface; impact depends on its purpose, configuration, and access controls."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+        }
+      ]
+    },
+    {
+      "finding_id": "OFF-54e7185c528a",
+      "target": "192.168.88.38",
+      "path": [
+        {
+          "stage": "Network Host",
+          "detail": "192.168.88.38"
+        },
+        {
+          "stage": "Exposed Service",
+          "detail": "microsoft-ds (tcp/445)"
+        },
+        {
+          "stage": "Potential Weakness or Exposure",
+          "detail": "Service identification is incomplete"
+        },
+        {
+          "stage": "Possible Security Impact",
+          "detail": "Incomplete identification can make patch and exposure reviews less reliable."
+        },
+        {
+          "stage": "Defensive Control",
+          "detail": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current."
+        }
+      ]
+    }
+  ],
+  "Defensive Recommendations": [
+    {
+      "finding_id": "OFF-1eb939a0308a",
+      "target": "192.168.88.38",
+      "recommendation": "Confirm the service is required, restrict it to trusted sources, and disable it if it is not needed."
+    },
+    {
+      "finding_id": "OFF-67d043df4913",
+      "target": "192.168.88.38",
+      "recommendation": "Confirm the service owner and software identity through approved inventory or safe identification methods, then keep the software inventory current."
+    }
+  ],
+  "Assessment Limitations": [
+    "Assessment is limited to the hosts, ports, and service details returned by enumeration.",
+    "An empty finding list does not prove that a host or network is secure.",
+    "No external vulnerability database or vendor advisory feed is consulted."
+  ],
+  "errors": [],
+  "Final Statistics": {
+    "Hosts discovered": 1,
+    "Hosts assessed": 1,
+    "Open ports": 3,
+    "Services identified": 3,
+    "Informational findings": 6,
+    "Low findings": 0,
+    "Medium findings": 0,
+    "High findings": 0,
+    "Critical findings": 0
+  }
+}

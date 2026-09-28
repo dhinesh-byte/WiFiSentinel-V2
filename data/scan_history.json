@@ -1,0 +1,89 @@
+[
+    {
+        "id": "ebbc8e4b-25b1-43dc-98d9-15015590cabb",
+        "target": "192.168.88.38/24",
+        "timestamp": "2026-09-27T15:35:50",
+        "duration": 67.5,
+        "devices": 14,
+        "hosts_discovered": 14,
+        "hosts_scanned": 14,
+        "open_ports": 11,
+        "risks": 7,
+        "status": "completed",
+        "detail_available": true,
+        "limitations": [
+            "OS fingerprinting was skipped because Nmap requires elevated privileges."
+        ]
+    },
+    {
+        "id": "68ac86c5-d409-462c-ac78-993fc22ea683",
+        "target": "192.168.88.38/24",
+        "timestamp": "2026-09-27T15:14:55",
+        "duration": 89.3,
+        "devices": 21,
+        "hosts_discovered": 21,
+        "hosts_scanned": 21,
+        "open_ports": 16,
+        "risks": 10,
+        "status": "completed",
+        "detail_available": true,
+        "limitations": [
+            "OS fingerprinting was skipped because Nmap requires elevated privileges."
+        ]
+    },
+    {
+        "id": "6425c80e-5516-4adb-9f65-efac689cf5bd",
+        "target": "100.71.192.255/24",
+        "timestamp": "2026-09-27T15:12:24",
+        "duration": 119.5,
+        "devices": 0,
+        "hosts_discovered": 0,
+        "hosts_scanned": 0,
+        "open_ports": 0,
+        "risks": 0,
+        "status": "error",
+        "detail_available": true,
+        "limitations": []
+    },
+    {
+        "id": "54883a26-bd6c-400b-ba81-0a3b33aed320",
+        "target": "100.71.192.255/24",
+        "timestamp": "2026-09-27T15:09:54",
+        "duration": 119.6,
+        "devices": 0,
+        "hosts_discovered": 0,
+        "hosts_scanned": 0,
+        "open_ports": 0,
+        "risks": 0,
+        "status": "error",
+        "detail_available": true,
+        "limitations": []
+    },
+    {
+        "id": "b06e4d7f-0be2-47c6-ba4b-4a212b0a8dee",
+        "target": "192.168.88.38/24",
+        "timestamp": "2026-09-27T13:58:25",
+        "duration": 290.6,
+        "devices": 21,
+        "open_ports": 0,
+        "risks": 0
+    },
+    {
+        "id": "367d85c4-ffae-4c57-8545-fce6a1387957",
+        "target": "192.168.88.0/24",
+        "timestamp": "2026-09-24T18:12:40",
+        "duration": 294.9,
+        "devices": 20,
+        "open_ports": 0,
+        "risks": 0
+    },
+    {
+        "id": "a446de65-eac7-4ad9-a19f-03790515c1a3",
+        "target": "192.168.88.0/24",
+        "timestamp": "2026-09-24T17:49:19",
+        "duration": 1846.8,
+        "devices": 17,
+        "open_ports": 0,
+        "risks": 0
+    }
+]

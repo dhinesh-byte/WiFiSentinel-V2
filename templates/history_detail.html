@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f2f6f2">
+    {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
+    <title>{{ detail.module }} scan details | WiFi Sentinel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/overview.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="WiFi Sentinel overview">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span>WiFi <strong>Sentinel</strong></span>
+        </a>
+        <nav class="product-nav" aria-label="Product navigation">
+            <a href="/">Overview</a>
+            <a class="is-current" href="/history" aria-current="page">History</a>
+            <a href="/defensive">Defensive</a>
+            <a href="/offensive/">Offensive</a>
+        </nav>
+        {% if auth_enabled %}
+        <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Sign out</button>
+        </form>
+        {% endif %}
+    </header>
+
+    <main class="page-shell detail-shell">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow">{{ detail.module|upper }} MODULE <span>/</span> SAVED RESULT</p>
+                <h1>{{ detail.target }}</h1>
+                <p class="subtitle">{{ detail.timestamp or 'Date unavailable' }} · {{ detail.status }}</p>
+            </div>
+            <div class="detail-actions">
+                <a href="/history">Back to history</a>
+                <a href="/history/{{ detail.module|lower }}/{{ scan_id }}/export">Export JSON</a>
+            </div>
+        </section>
+
+        <dl class="detail-summary">
+            <div class="detail-stat"><dt>MODULE</dt><dd>{{ detail.module }}</dd></div>
+            <div class="detail-stat"><dt>STATUS</dt><dd>{{ detail.status }}</dd></div>
+            <div class="detail-stat"><dt>COVERAGE</dt><dd>{{ detail.coverage }}</dd></div>
+            <div class="detail-stat"><dt>HOSTS</dt><dd>{{ detail.hosts|length }}</dd></div>
+        </dl>
+
+        <section class="detail-section">
+            <h2>Hosts reached</h2>
+            {% if detail.hosts %}
+            <div class="table-wrap">
+                <table class="detail-table">
+                    <thead><tr><th>HOST</th><th>NAME</th><th>MAC / VENDOR</th><th>OS MATCH</th><th>STATUS</th><th>OPEN PORTS</th><th>DISTANCE</th><th>UPTIME</th><th>RISK / NOTES</th></tr></thead>
+                    <tbody>
+                        {% for host in detail.hosts %}
+                        <tr>
+                            <td class="target-cell">{{ host.ip }}</td>
+                            <td>{{ host.hostname }}</td>
+                            <td>{{ host.mac }}{% if host.vendor and host.vendor != 'Unknown' %}<br>{{ host.vendor }}{% endif %}</td>
+                            <td>{% if host.os and host.os != 'Unknown' %}{{ host.os }} ({{ host.os_accuracy }}%){% else %}Not identified{% endif %}</td>
+                            <td>{{ host.status }}</td>
+                            <td>{{ host.open_ports if host.open_ports is defined else host.ports|length }}</td>
+                            <td>{{ host.distance or '—' }}</td>
+                            <td>{% if host.uptime_seconds %}{{ host.uptime_seconds }} seconds{% elif host.last_boot %}Booted {{ host.last_boot }}{% else %}—{% endif %}</td>
+                            <td>{% if host.risk %}{{ host.risk.level or host.risk.score or 'Recorded' }}{% elif host.risks %}{{ host.risks|length }} items{% else %}No host-level risk recorded{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="detail-empty">No host-level details were retained for this older summary record.</p>
+            {% endif %}
+        </section>
+
+        {% if detail.services %}
+        <section class="detail-section">
+            <h2>Services observed</h2>
+            <div class="table-wrap">
+                <table class="detail-table">
+                    <thead><tr><th>HOST</th><th>PORT</th><th>SERVICE</th><th>PRODUCT / VERSION</th><th>TUNNEL</th><th>CONFIDENCE</th><th>CPE</th></tr></thead>
+                    <tbody>
+                        {% for service in detail.services %}
+                        <tr>
+                            <td class="target-cell">{{ service.host or service.target or 'Unknown' }}</td>
+                            <td>{{ service.port or '—' }}</td>
+                            <td>{{ service.service or service.protocol or 'Unknown' }}</td>
+                            <td>{{ service.product or service.version or 'Not identified' }}</td>
+                            <td>{{ service.tunnel or '—' }}</td>
+                            <td>{{ service.service_confidence or service.confidence or '—' }}</td>
+                            <td>{{ (service.cpes or [])|join(', ') or service.cpe or '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="detail-section">
+            <h2>Findings and limitations</h2>
+            {% if detail.findings %}
+            <ul class="detail-list">
+                {% for finding in detail.findings %}
+                <li>{% if finding is mapping %}{{ finding.severity or 'Finding' }}: {{ finding.title or finding.description or finding.summary or 'Recorded finding' }}{% else %}{{ finding }}{% endif %}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="detail-empty">No findings were recorded.</p>
+            {% endif %}
+            {% if detail.limitations %}
+            <ul class="detail-list">
+                {% for limitation in detail.limitations %}<li>{{ limitation }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+            {% if detail.errors %}
+            <ul class="detail-list">
+                {% for error in detail.errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </section>
+
+        <details class="raw-report">
+            <summary>View complete JSON record</summary>
+            <pre>{{ detail.raw|tojson(indent=2) }}</pre>
+        </details>
+        <footer>WiFi Sentinel <span>LOCAL SECURITY WORKSPACE</span></footer>
+    </main>
+</body>
+</html>

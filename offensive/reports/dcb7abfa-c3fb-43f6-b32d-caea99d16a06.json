@@ -1,0 +1,68 @@
+{
+  "report_title": "WiFi Sentinel V2.0 - Offensive Security Assessment",
+  "assessment_status": "INCOMPLETE",
+  "Executive Summary": "Assessment is incomplete. Available findings reflect only the evidence collected; missing scan or assessment data prevents a complete conclusion.",
+  "Scan Information": {
+    "target": "100.71.192.0/24",
+    "scan_type": "offensive",
+    "report_id": "dcb7abfa-c3fb-43f6-b32d-caea99d16a06",
+    "discovery_status": "TIMEOUT",
+    "enumeration_status": "TIMEOUT",
+    "vulnerability_assessment_status": "INCOMPLETE",
+    "report_generated_at": "2026-09-27T09:41:00+00:00"
+  },
+  "Hosts Assessed": [],
+  "Services Discovered": [],
+  "UDP States Requiring Verification": [],
+  "Web/TLS Observations": {
+    "status": "INCOMPLETE",
+    "services": []
+  },
+  "CVE Correlation": {
+    "status": "completed",
+    "catalog_records": 0,
+    "catalog_metadata": {
+      "schema_version": 1,
+      "source": "offline exact-CPE catalog",
+      "updated_at": null
+    },
+    "matches": []
+  },
+  "Segmentation Observations": [],
+  "Security Findings": [],
+  "Attack Scenarios": [],
+  "Attack Path Graph": {
+    "nodes": [],
+    "edges": []
+  },
+  "Defensive Recommendations": [],
+  "Assessment Limitations": [
+    "Discovery status was TIMEOUT. The discovered host list may be incomplete or unavailable.",
+    "Enumeration status was TIMEOUT. Open ports and service details could not be collected reliably.",
+    "No host enumeration records were available for reporting.",
+    "Vulnerability assessment status was INCOMPLETE. Security assessment results may be incomplete or unavailable.",
+    "Assessment is limited to the hosts, ports, and service details returned by enumeration.",
+    "An empty finding list does not prove that a host or network is secure.",
+    "No external vulnerability database or vendor advisory feed is consulted.",
+    "No enumerated HTTP or HTTPS service was available for web/TLS checks.",
+    "The offline CVE catalog is empty; no vulnerability correlation data was available."
+  ],
+  "errors": [
+    "Nmap discovery timed out."
+  ],
+  "Final Statistics": {
+    "Hosts discovered": null,
+    "Hosts assessed": 0,
+    "Open ports": null,
+    "Services identified": null,
+    "UDP ports observed": 0,
+    "UDP states requiring verification": 0,
+    "Web endpoints assessed": 0,
+    "CVE catalog matches": 0,
+    "Informational findings": 0,
+    "Low findings": 0,
+    "Medium findings": 0,
+    "High findings": 0,
+    "Critical findings": 0
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "report_title": "WiFi Sentinel V2.0 - Offensive Security Assessment",
+  "assessment_status": "INCOMPLETE",
+  "Executive Summary": "Assessment is incomplete. Available findings reflect only the evidence collected; missing scan or assessment data prevents a complete conclusion.",
+  "Scan Information": {
+    "target": "100.71.192.255",
+    "scan_type": "offensive",
+    "report_id": "5f604eca-e8f4-43a8-873e-90481a16bf36",
+    "discovery_status": "COMPLETED",
+    "enumeration_status": "COMPLETED",
+    "vulnerability_assessment_status": "INSUFFICIENT_EVIDENCE",
+    "report_generated_at": "2026-09-27T09:39:18+00:00"
+  },
+  "Hosts Assessed": [],
+  "Services Discovered": [],
+  "UDP States Requiring Verification": [],
+  "Web/TLS Observations": {
+    "status": "COMPLETED",
+    "services": []
+  },
+  "CVE Correlation": {
+    "status": "completed",
+    "catalog_records": 0,
+    "catalog_metadata": {
+      "schema_version": 1,
+      "source": "offline exact-CPE catalog",
+      "updated_at": null
+    },
+    "matches": []
+  },
+  "Segmentation Observations": [],
+  "Security Findings": [],
+  "Attack Scenarios": [],
+  "Attack Path Graph": {
+    "nodes": [],
+    "edges": []
+  },
+  "Defensive Recommendations": [],
+  "Assessment Limitations": [
+    "No host enumeration records were available for reporting.",
+    "Vulnerability assessment status was INSUFFICIENT_EVIDENCE. Security assessment results may be incomplete or unavailable.",
+    "Enumeration returned no host records to assess.",
+    "Missing host records do not establish that any host is secure.",
+    "No enumerated HTTP or HTTPS service was available for web/TLS checks.",
+    "The offline CVE catalog is empty; no vulnerability correlation data was available."
+  ],
+  "errors": [],
+  "Final Statistics": {
+    "Hosts discovered": 0,
+    "Hosts assessed": 0,
+    "Open ports": 0,
+    "Services identified": 0,
+    "UDP ports observed": 0,
+    "UDP states requiring verification": 0,
+    "Web endpoints assessed": 0,
+    "CVE catalog matches": 0,
+    "Informational findings": 0,
+    "Low findings": 0,
+    "Medium findings": 0,
+    "High findings": 0,
+    "Critical findings": 0
+  }
+}

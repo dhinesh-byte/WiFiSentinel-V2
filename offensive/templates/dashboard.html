@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	{% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
+	<meta name="theme-color" content="#f4f7f3">
+	<title>WiFi Sentinel | Network Assessment</title>
+	<link rel="icon" href="data:,">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+	<script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+</head>
+<body>
+	<header class="topbar">
+		<a class="brand" href="/" aria-label="WiFi Sentinel home">
+			<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+			<span class="brand-name">WiFi <b>Sentinel</b></span>
+			<span class="brand-version">V2.0</span>
+		</a>
+		<div class="topbar-meta">
+			<span class="live-dot" aria-hidden="true"></span>
+			<span>Local assessment console</span>
+			<span class="topbar-divider" aria-hidden="true"></span>
+			<span class="topbar-mode">AUTHORIZED USE</span>
+			<nav class="product-nav" aria-label="Product navigation">
+				<a href="/">Overview</a>
+				<a href="/history">History</a>
+				<a href="/defensive">Defensive</a>
+				<a class="is-current" href="/offensive/" aria-current="page">Offensive</a>
+			</nav>
+			{% if auth_enabled %}
+			<form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				<button type="submit">Sign out</button>
+			</form>
+			{% endif %}
+		</div>
+	</header>
+
+	<div class="app-layout">
+		<aside class="sidebar" aria-label="Dashboard navigation">
+			<p class="sidebar-caption">WORKSPACE</p>
+			<nav class="side-nav">
+				<a class="nav-link is-active" href="#overview"><span class="nav-marker">01</span>Overview</a>
+				<a class="nav-link" href="#hosts"><span class="nav-marker">02</span>Hosts</a>
+				<a class="nav-link" href="#services"><span class="nav-marker">03</span>Services</a>
+				<a class="nav-link" href="#web-tls"><span class="nav-marker">04</span>Web / TLS</a>
+				<a class="nav-link" href="#cve"><span class="nav-marker">05</span>CVE review</a>
+				<a class="nav-link" href="#segmentation"><span class="nav-marker">06</span>Shared services</a>
+				<a class="nav-link" href="#attack-paths"><span class="nav-marker">07</span>Attack map</a>
+				<a class="nav-link" href="#findings"><span class="nav-marker">08</span>Findings</a>
+				<a class="nav-link" href="#notes"><span class="nav-marker">09</span>Limitations</a>
+			</nav>
+			<div class="sidebar-foot">
+				<span class="sidebar-rule"></span>
+				<p>WI-FI SECURITY<br>ASSESSMENT</p>
+				<span class="sidebar-foot-meta">LOCAL CONSOLE / 01</span>
+			</div>
+		</aside>
+
+		<main class="main-content" id="overview">
+			<section class="page-heading">
+				<div>
+					<p class="eyebrow"><span class="eyebrow-square"></span> SECURITY OPERATIONS <span class="eyebrow-slash">/</span> OFFENSIVE MODULE</p>
+					<h1>Network assessment</h1>
+					<p class="page-subtitle">A focused view of discovered devices, exposed services, and evidence-backed findings.</p>
+				</div>
+				<div class="session-state state-ready" id="session-state" aria-live="polite">
+					<span class="state-indicator"></span>
+					<span class="state-label" id="session-state-label">READY</span>
+				</div>
+			</section>
+
+			<section class="scan-console" id="scan" aria-labelledby="scan-title">
+				<div class="console-heading">
+					<div class="console-title-group">
+						<p class="section-index">01 <span>/</span> AUTHORIZED DISCOVERY</p>
+						<h2 id="scan-title">Start a network scan</h2>
+					</div>
+					<p class="console-boundary">IPv4 host or network up to /24</p>
+				</div>
+				<form class="scan-form" id="scan-form">
+					<div class="target-control">
+						<label for="target-input">Target</label>
+						<div class="target-input-wrap">
+							<input id="target-input" name="target" type="text" inputmode="decimal" placeholder="192.168.1.0/24" autocomplete="off" spellcheck="false" required>
+							<span class="input-kind">IPv4</span>
+						</div>
+					</div>
+					<fieldset class="scan-options">
+						<legend>OPTIONAL CHECKS</legend>
+						<label class="option-control" for="include-web">
+							<input id="include-web" type="checkbox" checked>
+							<span class="option-check" aria-hidden="true"></span>
+							<span>Web / TLS</span>
+						</label>
+						<label class="option-control" for="include-udp">
+							<input id="include-udp" type="checkbox">
+							<span class="option-check" aria-hidden="true"></span>
+							<span>Selected UDP ports</span>
+						</label>
+					</fieldset>
+					<label class="authorization-control" for="authorization-check">
+						<input id="authorization-check" type="checkbox" required>
+						<span class="custom-check" aria-hidden="true"></span>
+						<span>I am authorized to assess this network</span>
+					</label>
+					<button class="scan-button" id="start-scan" type="submit" disabled>
+						<span>Start authorized scan</span><span class="button-arrow" aria-hidden="true">&#8594;</span>
+					</button>
+				</form>
+				<div class="scan-feedback" aria-live="polite">
+					<div class="scan-pulse" id="scan-pulse" aria-hidden="true"><span></span><span></span><span></span></div>
+					<div class="feedback-copy">
+						<div class="feedback-topline"><span id="scan-status">PENDING</span><span class="feedback-separator">/</span><span id="scan-stage">AWAITING TARGET</span></div>
+						<p id="scan-message">No assessment has been run in this session.</p>
+					</div>
+					<a class="report-link" id="report-link" href="#" hidden download>Download report JSON</a>
+				</div>
+				<p class="form-error" id="form-error" role="alert" hidden></p>
+			</section>
+
+			<section class="metrics-grid" aria-label="Assessment statistics">
+				<article class="metric metric-primary">
+					<span class="metric-label">HOSTS DISCOVERED</span>
+					<strong id="metric-discovered">--</strong>
+					<span class="metric-note">Discovery results</span>
+				</article>
+				<article class="metric">
+					<span class="metric-label">HOSTS ASSESSED</span>
+					<strong id="metric-assessed">--</strong>
+					<span class="metric-note">Enumeration complete</span>
+				</article>
+				<article class="metric metric-orange">
+					<span class="metric-label">OPEN PORTS</span>
+					<strong id="metric-ports">--</strong>
+					<span class="metric-note">Observed in scan</span>
+				</article>
+				<article class="metric">
+					<span class="metric-label">IDENTIFIED SERVICES</span>
+					<strong id="metric-services">--</strong>
+					<span class="metric-note">Service labels returned</span>
+				</article>
+				<article class="metric metric-findings">
+					<span class="metric-label">FINDINGS</span>
+					<strong id="metric-findings">--</strong>
+					<span class="metric-note">Assessment evidence</span>
+				</article>
+				<article class="metric metric-orange">
+					<span class="metric-label">UDP PORTS</span>
+					<strong id="metric-udp">--</strong>
+					<span class="metric-note">Selected profile</span>
+				</article>
+				<article class="metric metric-cve">
+					<span class="metric-label">CVE MATCHES</span>
+					<strong id="metric-cve">--</strong>
+					<span class="metric-note">Exact local CPE</span>
+				</article>
+			</section>
+
+			<section class="results-section" id="hosts" aria-labelledby="hosts-title">
+				<div class="section-heading">
+					<div>
+						<p class="section-index">02 <span>/</span> INVENTORY</p>
+						<h2 id="hosts-title">Hosts assessed</h2>
+					</div>
+					<span class="section-count" id="host-count">0 HOSTS</span>
+				</div>
+				<div class="table-wrap">
+					<table>
+						<thead><tr><th>Target</th><th>Hostname</th><th>Enumeration</th><th>Open ports</th><th>Services identified</th></tr></thead>
+						<tbody id="hosts-table-body"><tr class="empty-row"><td colspan="5">Host details will appear after a scan.</td></tr></tbody>
+					</table>
+				</div>
+				<p class="udp-uncertainty" id="udp-uncertainty" hidden></p>
+			</section>
+
+			<section class="results-section" id="services" aria-labelledby="services-title">
+				<div class="section-heading">
+					<div>
+						<p class="section-index">03 <span>/</span> EXPOSURE</p>
+						<h2 id="services-title">Services discovered</h2>
+					</div>
+					<span class="section-count" id="service-count">0 SERVICES</span>
+				</div>
+				<div class="table-wrap">
+					<table>
+						<thead><tr><th>Target</th><th>Port</th><th>Service</th><th>Product</th><th>Version</th></tr></thead>
+						<tbody id="services-table-body"><tr class="empty-row"><td colspan="5">No service data collected.</td></tr></tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="results-section" id="web-tls" aria-labelledby="web-title">
+				<div class="section-heading">
+					<div>
+						<p class="section-index">04 <span>/</span> HTTP + TLS</p>
+						<h2 id="web-title">Web / TLS observations</h2>
+					</div>
+					<span class="section-count" id="web-count">0 ENDPOINTS</span>
+				</div>
+				<div class="table-wrap">
+					<table class="web-table">
+						<thead><tr><th>Target</th><th>Endpoint</th><th>HTTP</th><th>TLS / Cipher</th><th>Server</th><th>Technology</th><th>Observed notes</th></tr></thead>
+						<tbody id="web-table-body"><tr class="empty-row"><td colspan="7">Web / TLS checks are enabled for discovered HTTP(S) services.</td></tr></tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="results-section" id="cve" aria-labelledby="cve-title">
+				<div class="section-heading">
+					<div>
+						<p class="section-index">05 <span>/</span> OFFLINE INTELLIGENCE</p>
+						<h2 id="cve-title">CVE correlation</h2>
+					</div>
+					<span class="section-count" id="cve-count">0 MATCHES</span>
+				</div>
+				<p class="section-note" id="cve-note">Exact CPE matches only. An empty local catalog is not evidence that software has no vulnerabilities.</p>
+				<div class="table-wrap">
+					<table class="cve-table">
+						<thead><tr><th>CVE</th><th>Severity</th><th>Target / port</th><th>Product / version</th><th>Confidence</th><th>Summary</th></tr></thead>
+						<tbody id="cve-table-body"><tr class="empty-row"><td colspan="6">No exact catalog matches.</td></tr></tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="results-section" id="segmentation" aria-labelledby="segmentation-title">
+				<div class="section-heading">
+					<div>
+						<p class="section-index">06 <span>/</span> CROSS-HOST REVIEW</p>
+						<h2 id="segmentation-title">Shared-service observations</h2>
+					</div>
+					<span class="section-count" id="segmentation-count">0 PATTERNS</span>
+				</div>
+				<p class="section-note">Repeated services are an inventory pattern only; without network-zone policy, they do not prove a segmentation failure.</p>
+				<div class="table-wrap">
+					<table>
+						<thead><tr><th>Service</th><th>Endpoint</th><th>Observed hosts</th><th>Interpretation</th><th>Review</th></tr></thead>
+						<tbody id="segmentation-table-body"><tr class="empty-row"><td colspan="5">No repeated service pattern observed across assessed hosts.</td></tr></tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="results-section" id="attack-paths" aria-labelledby="attack-paths-title">
+				<div class="section-heading">
+					<div>
+						<p class="section-index">07 <span>/</span> OBSERVED ATTACK SURFACE</p>
+						<h2 id="attack-paths-title">Attack surface map</h2>
+					</div>
+					<span class="section-count" id="graph-count">0 LINKS</span>
+				</div>
+				<p class="section-note">Edges show observed exposure and evidence-backed assessment relationships, not successful exploitation.</p>
+				<div class="attack-graph" id="attack-graph">
+					<div class="empty-state" id="graph-empty">
+						<span class="empty-state-mark" aria-hidden="true">+</span>
+						<p>No attack-surface graph yet</p>
+						<span>Observed hosts and services will be mapped after assessment.</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="results-section findings-section" id="findings" aria-labelledby="findings-title">
+				<div class="section-heading">
+					<div>
+						<p class="section-index">08 <span>/</span> ASSESSMENT</p>
+						<h2 id="findings-title">Security findings</h2>
+					</div>
+					<span class="section-count" id="finding-count">0 FINDINGS</span>
+				</div>
+				<div class="finding-list" id="finding-list">
+					<div class="empty-state" id="finding-empty">
+						<span class="empty-state-mark" aria-hidden="true">+</span>
+						<p>No findings to review</p>
+						<span>Results from a completed assessment will appear here.</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="notes-grid" id="notes">
+				<div class="notes-panel">
+					  <p class="section-index">09 <span>/</span> SCOPE NOTES</p>
+					<h2>Assessment limitations</h2>
+					<ul id="limitations-list"><li>Assessment has not started.</li></ul>
+				</div>
+				<div class="notes-panel notes-errors">
+					<p class="section-index">DIAGNOSTICS</p>
+					<h2>Scan messages</h2>
+					<ul id="errors-list"><li>No scan errors reported.</li></ul>
+				</div>
+			</section>
+
+			<footer class="page-footer">
+				<span>WIFI SENTINEL <b>V2.0</b></span>
+				<span>AUTHORIZED ASSESSMENT ONLY</span>
+			</footer>
+		</main>
+	</div>
+</body>
+</html>

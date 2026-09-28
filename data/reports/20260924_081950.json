@@ -1,0 +1,68 @@
+{
+    "timestamp": "2026-09-24T08:19:50.044388",
+    "network": "10.160.135.51/24",
+    "device_count": 2,
+    "devices": [
+        {
+            "ip": "10.160.135.205",
+            "hostname": "Unknown",
+            "mac": "5E:78:1B:AC:D0:39",
+            "status": "UP",
+            "ports": [
+                {
+                    "port": 53,
+                    "protocol": "TCP",
+                    "service": "domain",
+                    "version": "dnsmasq 2.51"
+                }
+            ],
+            "risk": {
+                "score": 0,
+                "level": "LOW",
+                "reasons": [
+                    "No high-risk common services were detected."
+                ]
+            }
+        },
+        {
+            "ip": "10.160.135.51",
+            "hostname": "Unknown",
+            "mac": "Unknown",
+            "status": "UP",
+            "ports": [
+                {
+                    "port": 135,
+                    "protocol": "TCP",
+                    "service": "msrpc",
+                    "version": "Microsoft Windows RPC"
+                },
+                {
+                    "port": 139,
+                    "protocol": "TCP",
+                    "service": "netbios-ssn",
+                    "version": "Microsoft Windows netbios-ssn"
+                },
+                {
+                    "port": 445,
+                    "protocol": "TCP",
+                    "service": "microsoft-ds?",
+                    "version": ""
+                },
+                {
+                    "port": 3306,
+                    "protocol": "TCP",
+                    "service": "mysql?",
+                    "version": ""
+                }
+            ],
+            "risk": {
+                "score": 55,
+                "level": "HIGH",
+                "reasons": [
+                    "SMB service is exposed.",
+                    "MySQL service is exposed."
+                ]
+            }
+        }
+    ]
+}

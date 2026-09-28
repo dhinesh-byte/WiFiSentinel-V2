@@ -1,0 +1,14 @@
+{
+  "id": "6425c80e-5516-4adb-9f65-efac689cf5bd",
+  "target": "100.71.192.255/24",
+  "timestamp": "2026-09-27T15:12:24",
+  "duration": 119.5,
+  "status": "error",
+  "hosts_discovered": 0,
+  "hosts_scanned": 0,
+  "open_ports": 0,
+  "risks": 0,
+  "devices": [],
+  "limitations": [],
+  "error": "Discovery timed out after 120 seconds."
+}
