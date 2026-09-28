@@ -44,7 +44,7 @@ class NetworkDiscovery:
     def discover(
         self,
         target: str,
-        timeout: int = 120
+        timeout: int | None = 120
     ) -> Dict[str, Any]:
 
         if not self.is_available():
@@ -86,9 +86,12 @@ class NetworkDiscovery:
             )
 
         except subprocess.TimeoutExpired:
+            limit_text = "the configured timeout"
+            if timeout is not None:
+                limit_text = f"{timeout} seconds"
             return {
                 "success": False,
-                "error": f"Discovery timed out after {timeout} seconds.",
+                "error": f"Discovery timed out after {limit_text}.",
                 "target": target,
                 "devices": []
             }
