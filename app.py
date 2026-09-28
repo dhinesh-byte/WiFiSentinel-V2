@@ -248,6 +248,7 @@ def start_scan():
                 "success": False,
                 "error": "Timeout must be 30, 60, 120, or null."
             }), 400
+
         if timeout not in {30, 60, 120}:
             return jsonify({
                 "success": False,
@@ -310,13 +311,13 @@ def start_scan():
 # ============================================================
 # BACKGROUND SCANNER
 # ============================================================
-
 def run_scan(
     job_id,
     target,
     profile="thorough",
     timeout=60,
 ):
+
     try:
 
         # ====================================================
@@ -331,7 +332,7 @@ def run_scan(
 
         discovery_result = discovery.discover(
             target,
-            timeout=timeout if timeout is not None else 3600,
+            timeout=timeout,
         )
 
         if not discovery_result["success"]:
