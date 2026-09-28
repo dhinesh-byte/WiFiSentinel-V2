@@ -116,7 +116,7 @@ function showScanningUI(network) {
 function finishClientScan(success, message) {
     scanRunning = false;
     stopTimer();
-    if (statusInterval) clearInterval(statusInterval);
+    if (statusInterval) clearTimeout(statusInterval);
     statusInterval = null;
     scanOverlay?.classList.add("hidden");
     const indicator = scanStatus?.querySelector(".status-indicator");
@@ -182,7 +182,7 @@ async function pollScanStatus() {
             const scan = data.scan || data;
             updateScanUI(scan);
             if (scan.finished || ["completed", "error", "failed"].includes(String(scan.status).toLowerCase())) {
-                if (scan.status === "completed") finishClientScan(true, "Defensive assessment completed.");
+                if (String(scan.status).toLowerCase() === "completed") finishClientScan(true, "Defensive assessment completed.");
                 else finishClientScan(false, scan.error || "Defensive assessment failed.");
                 return;
             }
@@ -199,83 +199,38 @@ function handleScanError(error) {
 }
 
 async function startScan() {
-
-    if (scanRunning) {
-        return;
-    }
+    if (scanRunning) return;
 
     const network = networkInput?.value.trim() || "";
-
     if (!isValidNetwork(network)) {
-        handleScanError(
-            new Error(
-                "Enter a valid IPv4 CIDR network, for example 192.168.1.0/24."
-            )
-        );
+        handleScanError(new Error("Enter a valid IPv4 CIDR network, for example 192.168.1.0/24."));
         return;
     }
 
     const settings = await openScanSettingsModal();
-
-    if (!settings) {
-        return;
-    }
+    if (!settings) return;
 
     currentNetwork = network;
-
     showScanningUI(network);
-
-    if (statusTitle) {
-        statusTitle.textContent = "Starting defensive assessment";
-    }
-
-    if (statusMessage) {
-        statusMessage.textContent =
-            `${formatScanProfile(settings.profile)} profile • ${formatScanTimeout(settings.timeout)}`;
-    }
-
-    if (scanState) {
-        scanState.textContent = "Starting";
-    }
+    if (statusTitle) statusTitle.textContent = "Starting defensive assessment";
+    if (statusMessage) statusMessage.textContent = `${formatScanProfile(settings.profile)} profile • ${formatScanTimeout(settings.timeout)}`;
+    if (scanState) scanState.textContent = "Starting";
 
     try {
         const response = await fetch("/api/scan/start", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({
-                target: network,
-                profile: settings.profile,
-                timeout: settings.timeout
-            })
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({ target: network, profile: settings.profile, timeout: settings.timeout })
         });
-
         const data = await response.json();
-
         if (!response.ok || !data.success || !data.job_id) {
-            throw new Error(
-                data.error ||
-                data.message ||
-                "The defensive scanner did not return a scan job."
-            );
+            throw new Error(data.error || data.message || "The defensive scanner did not return a scan job.");
         }
-
         currentJobId = data.job_id;
-
-        if (overlayNetwork) {
-            overlayNetwork.textContent =
-                `${network} • ${formatScanProfile(settings.profile)} • ${formatScanTimeout(settings.timeout)}`;
-        }
-
-        if (overlayStage) {
-            overlayStage.textContent =
-                `${formatScanProfile(settings.profile)} assessment started`;
-        }
-
+        if (overlayNetwork) overlayNetwork.textContent = `${network} • ${formatScanProfile(settings.profile)} • ${formatScanTimeout(settings.timeout)}`;
+        if (overlayStage) overlayStage.textContent = `${formatScanProfile(settings.profile)} assessment started`;
+        startTimer();
         await pollScanStatus();
-
     } catch (error) {
         handleScanError(error);
     }
@@ -317,13 +272,16 @@ function openScanSettingsModal() {
     });
 }
 
-function formatScanProfile(profile) { return { standard: "Standard", thorough: "Thorough", deep: "Deep" }[profile] || "Thorough"; }
-function formatScanTimeout(timeout) { return timeout === null ? "No timeout" : `${timeout}s timeout`; }
+function formatScanProfile(profile) {
+    return { standard: "Standard", thorough: "Thorough", deep: "Deep" }[profile] || "Thorough";
+}
 
-/* Safe UI helpers */
+function formatScanTimeout(timeout) {
+    return timeout === null ? "No timeout" : `${timeout}s timeout`;
+}
+
 function displayDevices(devices) {
-    if (!devicesContainer) return;
-    if (!devices.length) return;
+    if (!devicesContainer || !devices.length) return;
     devicesContainer.innerHTML = devices.map(device => `<div class="device-card"><strong>${escapeHtml(device.ip || "Unknown")}</strong><span>${escapeHtml(device.hostname || "Unknown")}</span><span>Open ports: ${Number(device.open_ports_count || (device.open_ports || []).length || 0)}</span></div>`).join("");
 }
 
@@ -343,5 +301,12 @@ function escapeHtml(value) {
 }
 
 /* CRITICAL: wire the visible Start Scan button to the real scanner. */
-if (scanButton) scanButton.addEventListener("click", startScan);
-if (networkInput) networkInput.addEventListener("keydown", event => { if (event.key === "Enter") startScan(); });
+if (scanButton) {
+    scanButton.addEventListener("click", startScan);
+}
+
+if (networkInput) {
+    networkInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") startScan();
+    });
+}
