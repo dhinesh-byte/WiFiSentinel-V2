@@ -229,48 +229,52 @@ def index():
 )
 def start_scan():
 
-    data = request.get_json(
-        silent=True
-    ) or {}
+    data = request.get_json(silent=True) or {}
 
-    target = str(
-        data.get(
-            "target",
-            ""
-        )
-    ).strip()
+    target = str(data.get("target", "")).strip()
+    profile = str(data.get("profile", "thorough")).strip().lower()
+
+    if profile not in {"standard", "thorough", "deep"}:
+        profile = "thorough"
+
+    raw_timeout = data.get("timeout", 60)
+    if raw_timeout in (None, "", "none", "null"):
+        timeout = None
+    else:
+        try:
+            timeout = int(raw_timeout)
+        except (TypeError, ValueError):
+            return jsonify({
+                "success": False,
+                "error": "Timeout must be 30, 60, 120, or null."
+            }), 400
+        if timeout not in {30, 60, 120}:
+            return jsonify({
+                "success": False,
+                "error": "Timeout must be 30, 60, 120, or null."
+            }), 400
 
     if not target:
-
         return jsonify({
             "success": False,
             "error": "Please enter an IP address or network."
         }), 400
 
-    # --------------------------------------------------------
-    # Validate target
-    # --------------------------------------------------------
-
     discovery = NetworkDiscovery()
 
     if not discovery.validate_target(target):
-
         return jsonify({
             "success": False,
             "error": f"Invalid IP/network: {target}"
         }), 400
 
-    # --------------------------------------------------------
-    # Create job
-    # --------------------------------------------------------
-
-    job_id = str(
-        uuid.uuid4()
-    )
+    job_id = str(uuid.uuid4())
 
     scan_jobs[job_id] = {
         "job_id": job_id,
         "target": target,
+        "profile": profile,
+        "timeout": timeout,
         "status": "starting",
         "phase": "Preparing scan",
         "progress": 0,
@@ -283,25 +287,23 @@ def start_scan():
         "started_at": time.time(),
         "elapsed": 0,
         "error": None,
-        "finished": False
+        "finished": False,
+        "limitations": [],
     }
-
-    # --------------------------------------------------------
-    # Background scan
-    # --------------------------------------------------------
 
     thread = threading.Thread(
         target=run_scan,
-        args=(job_id, target),
-        daemon=True
+        args=(job_id, target, profile, timeout),
+        daemon=True,
     )
-
     thread.start()
 
     return jsonify({
         "success": True,
         "job_id": job_id,
-        "message": "Scan started"
+        "message": "Scan started",
+        "profile": profile,
+        "timeout": timeout,
     })
 
 
@@ -311,11 +313,10 @@ def start_scan():
 
 def run_scan(
     job_id,
-    target
+    target,
+    profile="thorough",
+    timeout=60,
 ):
-
-    job = scan_jobs[job_id]
-
     try:
 
         # ====================================================
@@ -329,7 +330,8 @@ def run_scan(
         discovery = NetworkDiscovery()
 
         discovery_result = discovery.discover(
-            target
+            target,
+            timeout=timeout if timeout is not None else 3600,
         )
 
         if not discovery_result["success"]:
@@ -375,9 +377,12 @@ def run_scan(
         # PHASE 2 — PORT/SERVICE SCANNING
         # ====================================================
 
-        job["phase"] = "Scanning ports and services"
+        job["phase"] = f"Scanning ports and services ({profile})"
 
-        port_scanner = PortScanner()
+        port_scanner = PortScanner(
+            timeout=timeout,
+            profile=profile,
+        )
 
         total_open_ports = 0
         scannable_devices = []
