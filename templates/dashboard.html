@@ -437,6 +437,48 @@
 </div>
 
 
+
+<!-- SCAN CONFIGURATION -->
+<div id="scanSettingsModal" class="scan-settings-modal hidden" aria-hidden="true">
+    <div class="scan-settings-backdrop"></div>
+    <div class="scan-settings-card" role="dialog" aria-modal="true" aria-labelledby="scan-settings-title">
+        <div class="scan-settings-head">
+            <div>
+                <p class="eyebrow">SCAN CONFIGURATION</p>
+                <h3 id="scan-settings-title">Choose scan intensity</h3>
+                <p class="scan-settings-subtitle">Configure the authorized assessment before it starts.</p>
+            </div>
+            <button type="button" id="scanSettingsClose" class="scan-settings-close" aria-label="Close">×</button>
+        </div>
+        <div class="scan-settings-field">
+            <label for="scanProfile">SCAN PROFILE</label>
+            <select id="scanProfile">
+                <option value="standard">Standard — common services</option>
+                <option value="thorough" selected>Thorough — ports 1–20,000 + service detection</option>
+                <option value="deep">Deep — full TCP 1–65,535 + deeper version detection</option>
+            </select>
+        </div>
+        <div class="scan-settings-field">
+            <label>TIMEOUT</label>
+            <div class="scan-timeout-options">
+                <label><input type="radio" name="scanTimeout" value="30"><span>30 sec</span></label>
+                <label><input type="radio" name="scanTimeout" value="60" checked><span>60 sec</span></label>
+                <label><input type="radio" name="scanTimeout" value="120"><span>120 sec</span></label>
+                <label><input type="radio" name="scanTimeout" value="none"><span>No timeout</span></label>
+            </div>
+        </div>
+        <div class="scan-settings-warning">
+            <strong>AUTHORIZED USE</strong>
+            <span>Only scan networks and systems you own or are explicitly authorized to assess.</span>
+        </div>
+        <div class="scan-settings-actions">
+            <button type="button" id="scanSettingsCancel" class="secondary-button">Cancel</button>
+            <button type="button" id="scanSettingsStart" class="scan-button">Start Assessment</button>
+        </div>
+    </div>
+</div>
+
+
 <!-- SCAN OVERLAY -->
 <div
     id="scanOverlay"
