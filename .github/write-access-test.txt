@@ -1,0 +1,1 @@
+WiFi Sentinel connector write-access test.
