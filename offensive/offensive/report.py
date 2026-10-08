@@ -105,7 +105,7 @@ class SecurityReport:
 		"""Generate a readable report suitable for terminal output."""
 		report = self.to_dict()
 		lines = [
-			"WiFi Sentinel V2.0 - Offensive Security Assessment",
+			"VulnScan v4.13 - Offensive Security Assessment",
 			"=" * 58,
 			f"Assessment Status: {report['assessment_status']}",
 			"",
@@ -230,6 +230,20 @@ class SecurityReport:
 					"product": product,
 					"version": version,
 					"state": "open",
+					"reason": self._known_text(port_entry.get("reason")),
+					"extrainfo": self._known_text(port_entry.get("extrainfo")),
+					"tunnel": self._known_text(port_entry.get("tunnel")),
+					"method": self._known_text(port_entry.get("method")),
+					"confidence": self._known_text(port_entry.get("confidence")),
+					"scripts": [
+						dict(value) for value in port_entry.get("scripts", [])
+						if isinstance(value, Mapping)
+					] if isinstance(port_entry.get("scripts"), list) else [],
+					"evidence": self._strings(port_entry.get("evidence")),
+					"cpes": [
+						value for value in port_entry.get("cpes", [])
+						if isinstance(value, str) and value.strip()
+					] if isinstance(port_entry.get("cpes"), list) else [],
 				}
 				open_ports.append(service_row)
 				service_rows.append(service_row)
@@ -276,6 +290,19 @@ class SecurityReport:
 				{
 					"target": target or None,
 					"hostname": self._known_text(host.get("hostname")),
+					"ipv6": self._known_text(host.get("ipv6")),
+					"mac": self._known_text(host.get("mac")),
+					"vendor": self._known_text(host.get("vendor")),
+					"state": self._known_text(host.get("state")),
+					"status_reason": self._known_text(host.get("status_reason")),
+					"traceroute": [
+						dict(hop) for hop in host.get("traceroute", [])
+						if isinstance(hop, Mapping)
+					] if isinstance(host.get("traceroute"), list) else [],
+					"device_type": self._known_text(host.get("device_type")),
+					"os": self._known_text(host.get("os")),
+					"discovery_method": self._known_text(host.get("discovery_method")),
+					"evidence": self._strings(host.get("evidence")),
 					"status": host_status.upper() if host_status else "NOT PROVIDED",
 					"open_ports": len(open_ports),
 					"services_identified": sum(
@@ -427,7 +454,7 @@ class SecurityReport:
 			limitations.append("Assessment data was incomplete; conclusions are limited.")
 
 		return {
-			"report_title": "WiFi Sentinel V2.0 - Offensive Security Assessment",
+			"report_title": "VulnScan v4.13 - Offensive Security Assessment",
 			"assessment_status": status,
 			"Executive Summary": summary,
 			"Scan Information": scan_info,
@@ -451,6 +478,25 @@ class SecurityReport:
 				"Hosts assessed": assessed_hosts_stat,
 				"Open ports": open_ports_stat,
 				"Services identified": services_stat,
+				"Versions identified": sum(1 for service in service_rows if service.get("version")),
+				"Web services": sum(
+					1 for item in web_observations if item.get("status") == "completed"
+				),
+				"TLS services": sum(
+					1 for service in service_rows
+					if service.get("tunnel") == "ssl"
+					or str(service.get("service") or "").lower().startswith("https")
+					or any(
+						str(script.get("id") or "").startswith("ssl-")
+						for script in service.get("scripts", [])
+						if isinstance(script, Mapping)
+					)
+				),
+				"Findings": len(report_findings),
+				"Risk indicators": sum(
+					1 for finding in report_findings
+					if finding.get("severity", "").lower() in {"medium", "high", "critical"}
+				),
 				"UDP ports observed": sum(
 					1 for service in service_rows if service["protocol"].lower() == "udp"
 				),

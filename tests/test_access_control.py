@@ -12,6 +12,10 @@ def clear_credentials(monkeypatch):
         "WIFI_SENTINEL_PASSWORD",
         "WIFI_SENTINEL_SECRET_KEY",
         "WIFI_SENTINEL_COOKIE_SECURE",
+        "VULNSCAN_ADMIN_USERNAME",
+        "VULNSCAN_ADMIN_PASSWORD",
+        "VULNSCAN_USER_USERNAME",
+        "VULNSCAN_USER_PASSWORD",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -56,3 +60,49 @@ def test_login_csrf_and_authenticated_scan_request(monkeypatch):
     csrf_token = client.get("/private").get_data(as_text=True)
     assert client.post("/api/change").status_code == 400
     assert client.post("/api/change", headers={"X-CSRF-Token": csrf_token}).status_code == 200
+
+
+@pytest.mark.parametrize(
+    ("username", "password", "expected_role"),
+    [
+        ("dhinesh", "dhinesh@123", "admin"),
+        ("user", "user@123", "user"),
+    ],
+)
+def test_admin_and_user_share_csrf_protected_login(monkeypatch, username, password, expected_role):
+    clear_credentials(monkeypatch)
+    monkeypatch.setenv("VULNSCAN_ADMIN_USERNAME", "dhinesh")
+    monkeypatch.setenv("VULNSCAN_ADMIN_PASSWORD", "dhinesh@123")
+    monkeypatch.setenv("VULNSCAN_USER_USERNAME", "user")
+    monkeypatch.setenv("VULNSCAN_USER_PASSWORD", "user@123")
+    monkeypatch.setenv("WIFI_SENTINEL_SECRET_KEY", "test-secret-key-that-is-at-least-thirty-two-characters")
+
+    test_app = Flask("role-auth-test")
+    configure_access_control(test_app)
+    test_app.add_url_rule("/private", "private", lambda: "private")
+    test_app.add_url_rule(
+        "/role",
+        "role",
+        lambda: render_template_string("{{ 'admin' if is_admin else 'user' }}"),
+    )
+    client = test_app.test_client()
+
+    login_page = client.get("/login").get_data(as_text=True)
+    assert "administrator or user account" in login_page
+    token = re.search(r'name="csrf_token" value="([^"]+)"', login_page).group(1)
+    assert client.post("/login", data={"csrf_token": token, "username": username, "password": password}).status_code == 302
+    assert client.get("/private").status_code == 200
+    assert client.get("/role").get_data(as_text=True) == expected_role
+    with client.session_transaction() as session:
+        assert session["_role"] == expected_role
+
+
+def test_role_auth_requires_both_distinct_accounts(monkeypatch):
+    clear_credentials(monkeypatch)
+    monkeypatch.setenv("VULNSCAN_ADMIN_USERNAME", "same-account")
+    monkeypatch.setenv("VULNSCAN_ADMIN_PASSWORD", "test-admin-password-long")
+    monkeypatch.setenv("VULNSCAN_USER_USERNAME", "same-account")
+    monkeypatch.setenv("VULNSCAN_USER_PASSWORD", "test-user-password-long")
+
+    with pytest.raises(RuntimeError, match="usernames must be different"):
+        configure_access_control(Flask("duplicate-role-auth"))

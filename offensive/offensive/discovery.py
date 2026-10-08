@@ -1,5 +1,5 @@
 """
-WiFi Sentinel V2.0
+VulnScan v4.13
 Offensive Security Module
 Authorized Network Discovery
 
@@ -17,10 +17,12 @@ import argparse
 import ipaddress
 import logging
 import shutil
-import subprocess
 import xml.etree.ElementTree as ET
+from collections.abc import Callable
+from threading import Event
 from typing import Any
 
+from scanner.nmap_process import nmap_stderr_excerpt, run_nmap
 
 logger = logging.getLogger(__name__)
 
@@ -34,13 +36,10 @@ class OffensiveDiscovery:
 
     def __init__(
         self,
-        timeout: int = 60,
+        timeout: int | None = None,
     ) -> None:
 
-        self.timeout = max(
-            10,
-            min(timeout, 300),
-        )
+        self.timeout = timeout
 
         self.nmap_path = shutil.which("nmap")
 
@@ -60,6 +59,8 @@ class OffensiveDiscovery:
     @staticmethod
     def validate_target(
         target: str,
+        *,
+        allow_ipv6: bool = False,
     ) -> str:
         """
         Validate an IPv4 address or IPv4 CIDR network.
@@ -88,10 +89,10 @@ class OffensiveDiscovery:
                     strict=False,
                 )
 
-                if network.version != 4:
+                if network.version != 4 and not allow_ipv6:
 
                     raise ValueError(
-                        "Only IPv4 networks are supported."
+                        "IPv6 networks require administrator scan options."
                     )
 
                 return str(network)
@@ -100,10 +101,10 @@ class OffensiveDiscovery:
                 target
             )
 
-            if address.version != 4:
+            if address.version != 4 and not allow_ipv6:
 
                 raise ValueError(
-                    "Only IPv4 addresses are supported."
+                    "IPv6 addresses require administrator scan options."
                 )
 
             return str(address)
@@ -163,6 +164,7 @@ class OffensiveDiscovery:
                 )
 
             ipv4 = ""
+            ipv6 = ""
             mac = ""
             vendor = ""
 
@@ -181,6 +183,10 @@ class OffensiveDiscovery:
                         "addr",
                         "",
                     )
+
+                elif address_type == "ipv6":
+
+                    ipv6 = address.get("addr", "")
 
                 elif address_type == "mac":
 
@@ -215,13 +221,15 @@ class OffensiveDiscovery:
                         "",
                     )
 
-            if not ipv4:
+            ip_address = ipv4 or ipv6
+            if not ip_address:
 
                 continue
 
             hosts.append(
                 {
-                    "ip": ipv4,
+                    "ip": ip_address,
+                    "ipv6": ipv6 or "Unknown",
                     "hostname": hostname
                     or "Unknown",
                     "mac": mac
@@ -229,6 +237,13 @@ class OffensiveDiscovery:
                     "vendor": vendor
                     or "Unknown",
                     "state": state,
+                    "status_reason": (
+                        status_element.get("reason", "")
+                        if status_element is not None
+                        else ""
+                    ),
+                    "discovery_method": "Nmap host discovery (-sn)",
+                    "evidence": [f"Nmap reported host state {state} for {ip_address}."],
                 }
             )
 
@@ -241,6 +256,11 @@ class OffensiveDiscovery:
     def discover(
         self,
         target: str,
+        nmap_options: dict[str, Any] | None = None,
+        cancel_event: Event | None = None,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
+        command_callback: Callable[[list[str]], None] | None = None,
+        output_callback: Callable[[dict[str, Any]], None] | None = None,
     ) -> dict[str, Any]:
         """
         Discover active hosts on an authorized target.
@@ -249,42 +269,83 @@ class OffensiveDiscovery:
         or another application layer.
         """
 
-        validated_target = self.validate_target(
-            target
-        )
+        allow_ipv6 = bool(nmap_options and nmap_options.get("ipv6"))
+        validated_target = self.validate_target(target, allow_ipv6=allow_ipv6)
+        target_is_network = "/" in target.strip()
 
         logger.info(
             "Starting offensive discovery: %s",
             validated_target,
         )
 
+        if nmap_options and nmap_options["discovery_method"] == "none":
+            network = ipaddress.ip_network(validated_target, strict=False)
+            if target_is_network and network.num_addresses > 1:
+                return {
+                    "status": "failed",
+                    "target": validated_target,
+                    "hosts": [],
+                    "errors": ["Skipping discovery is limited to one explicitly selected host."],
+                }
+            address = str(network.network_address)
+            return {
+                "status": "completed",
+                "target": validated_target,
+                "hosts": [{
+                    "ip": address,
+                    "ipv6": address if network.version == 6 else "Unknown",
+                    "hostname": "Unknown",
+                    "mac": "Unavailable",
+                    "vendor": "Unavailable",
+                    "state": "up",
+                    "status_reason": "Host assumed online; discovery was disabled by the administrator.",
+                    "discovery_method": "Discovery disabled (explicit host scope)",
+                    "evidence": [f"The selected host {address} was treated as online at the administrator's request."],
+                }],
+                "host_count": 1,
+                "errors": [],
+            }
+
         if not self.available():
-
-            logger.error(
-                "Nmap is not available."
-            )
-
+            logger.error("Nmap is not available.")
             return {
                 "status": "failed",
                 "target": validated_target,
                 "hosts": [],
-                "errors": [
-                    "Nmap was not found in PATH."
-                ],
+                "errors": ["Nmap was not found in PATH."],
             }
 
-        command = [
-            self.nmap_path,
-
-            # Host discovery only.
-            "-sn",
-
-            # XML output to stdout.
-            "-oX",
-            "-",
-
-            validated_target,
-        ]
+        command = [self.nmap_path, "-sn"]
+        if allow_ipv6:
+            command.append("-6")
+        if nmap_options is not None:
+            discovery_args = {
+                "default": [],
+                "arp": ["-PR"],
+                "icmp": ["-PE"],
+                "tcp-syn": ["-PS80,443"],
+                "tcp-ack": ["-PA80,443"],
+                "udp": ["-PU40125"],
+            }
+            command.extend(discovery_args[nmap_options["discovery_method"]])
+            command.append(f"-{nmap_options['timing']}")
+            if nmap_options.get("max_rate"):
+                command.extend(["--max-rate", str(nmap_options["max_rate"])])
+            if nmap_options.get("scan_delay"):
+                command.extend(["--scan-delay", f"{nmap_options['scan_delay']}ms"])
+            command.extend([
+                "--max-retries",
+                str(nmap_options["max_retries"]),
+                "--host-timeout",
+                f"{nmap_options['host_timeout']}s",
+            ])
+            if nmap_options["reason"]:
+                command.append("--reason")
+            if nmap_options["traceroute"]:
+                command.append("--traceroute")
+            if nmap_options["packet_trace"]:
+                command.append("--packet-trace")
+        command.extend(["-oX", "-", validated_target])
 
         logger.debug(
             "Executing authorized discovery."
@@ -292,31 +353,14 @@ class OffensiveDiscovery:
 
         try:
 
-            completed = subprocess.run(
+            completed = run_nmap(
                 command,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
                 timeout=self.timeout,
-                check=False,
+                cancel_event=cancel_event,
+                progress_callback=progress_callback,
+                command_callback=command_callback,
+                output_callback=output_callback,
             )
-
-        except subprocess.TimeoutExpired:
-
-            logger.warning(
-                "Discovery timed out: %s",
-                validated_target,
-            )
-
-            return {
-                "status": "timeout",
-                "target": validated_target,
-                "hosts": [],
-                "errors": [
-                    "Nmap discovery timed out."
-                ],
-            }
 
         except OSError as exc:
 
@@ -334,10 +378,23 @@ class OffensiveDiscovery:
                 ],
             }
 
+        if completed.status != "completed":
+            logger.warning(
+                "Discovery ended with status %s: %s",
+                completed.status,
+                validated_target,
+            )
+            return {
+                "status": completed.status,
+                "target": validated_target,
+                "hosts": [],
+                "errors": [completed.error or "Nmap discovery did not complete."],
+            }
+
         if completed.returncode != 0:
 
             error_message = (
-                completed.stderr.strip()
+                nmap_stderr_excerpt(completed.stderr)
                 or "Nmap returned an error."
             )
 
@@ -364,13 +421,16 @@ class OffensiveDiscovery:
             len(hosts),
         )
 
-        return {
+        result = {
             "status": "completed",
             "target": validated_target,
             "hosts": hosts,
             "host_count": len(hosts),
             "errors": [],
         }
+        if nmap_options and nmap_options.get("output_format") in {"xml", "both"}:
+            result["nmap_xml"] = completed.stdout
+        return result
 
 
 # =============================================================
@@ -381,7 +441,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         description=(
-            "WiFi Sentinel V2.0 - "
+            "VulnScan v4.13 - "
             "Authorized Offensive Discovery"
         )
     )
@@ -397,8 +457,8 @@ def main() -> None:
     parser.add_argument(
         "--timeout",
         type=int,
-        default=60,
-        help="Discovery timeout in seconds.",
+        default=None,
+        help="Optional discovery timeout in seconds; omitted means wait for Nmap.",
     )
 
     args = parser.parse_args()
@@ -415,7 +475,7 @@ def main() -> None:
     )
 
     print("=" * 60)
-    print("WiFi Sentinel V2.0")
+    print("VulnScan v4.13")
     print("Offensive Security - Discovery")
     print("=" * 60)
 

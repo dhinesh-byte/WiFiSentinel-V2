@@ -3,36 +3,29 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f2f6f2">
+    <meta name="theme-color" content="#09121e">
     {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
-    <title>Scan history | WiFi Sentinel</title>
+    <title>Scan history | VulnScan v4.13</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/overview.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared-shell.css') }}">
+    <script src="{{ url_for('static', filename='js/engine-status.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/history.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/ai-chat.js') }}" defer></script>
 </head>
-<body>
-    <header class="topbar">
-        <a class="brand" href="/" aria-label="WiFi Sentinel overview">
-            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span>WiFi <strong>Sentinel</strong></span>
-        </a>
-        <nav class="product-nav" aria-label="Product navigation">
-            <a href="/">Overview</a>
-            <a class="is-current" href="/history" aria-current="page">History</a>
-            <a href="/defensive">Defensive</a>
-            <a href="/offensive/">Offensive</a>
-        </nav>
-        {% if auth_enabled %}
-        <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit">Sign out</button>
-        </form>
-        {% endif %}
-    </header>
-
+<body data-mode="workspace">
+    <div class="app-shell">
+        {% with active_mode='history' %}
+            {% include "_app_sidebar.html" %}
+            <div class="app-main">
+                {% include "_app_topbar.html" %}
+        {% endwith %}
     <main class="page-shell history-shell">
         <section class="page-heading">
             <div>
@@ -90,6 +83,7 @@
                             <td class="actions-cell">
                                 <a href="{{ scan.detail_url }}">Details</a>
                                 {% if scan.export_url %}<a href="{{ scan.export_url }}">JSON</a>{% endif %}
+                                {% if scan.detail_available %}<button class="ai-context-trigger" type="button" data-ai-scan-id="{{ scan.scan_id }}" data-ai-module="{{ scan.module_key }}">Ask AI</button>{% endif %}
                             </td>
                         </tr>
                         {% else %}
@@ -100,7 +94,7 @@
             </div>
             <p class="no-filter-results" id="no-filter-results" hidden>No records match these filters.</p>
         </section>
-        <footer>WiFi Sentinel <span>LOCAL SECURITY WORKSPACE</span></footer>
+        <footer>VulnScan v4.13 <span>LOCAL SECURITY WORKSPACE</span></footer>
     </main>
 
     <dialog id="comparison-dialog" class="comparison-dialog" aria-labelledby="comparison-title">
@@ -110,7 +104,10 @@
         <div class="comparison-table-wrap"><table id="comparison-table"></table></div>
         <p class="comparison-note">Differences can reflect target availability, scan options, or network changes; they are not proof of a security regression.</p>
     </dialog>
+            </div>
+        </div>
 
     <script id="history-data" type="application/json">{{ activity|tojson }}</script>
+    {% include "_ai_drawer.html" %}
 </body>
 </html>

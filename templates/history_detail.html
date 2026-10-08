@@ -3,61 +3,63 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f2f6f2">
+    <meta name="theme-color" content="#09121e">
     {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
-    <title>{{ detail.module }} scan details | WiFi Sentinel</title>
+    <title>{{ detail.module }} scan details | VulnScan v4.13</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/overview.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared-shell.css') }}">
+    <script src="{{ url_for('static', filename='js/engine-status.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/ai-chat.js') }}" defer></script>
 </head>
-<body>
-    <header class="topbar">
-        <a class="brand" href="/" aria-label="WiFi Sentinel overview">
-            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span>WiFi <strong>Sentinel</strong></span>
-        </a>
-        <nav class="product-nav" aria-label="Product navigation">
-            <a href="/">Overview</a>
-            <a class="is-current" href="/history" aria-current="page">History</a>
-            <a href="/defensive">Defensive</a>
-            <a href="/offensive/">Offensive</a>
-        </nav>
-        {% if auth_enabled %}
-        <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit">Sign out</button>
-        </form>
-        {% endif %}
-    </header>
-
+<body data-mode="workspace">
+    <div class="app-shell">
+        {% with active_mode='history' %}
+            {% include "_app_sidebar.html" %}
+            <div class="app-main">
+                {% include "_app_topbar.html" %}
+        {% endwith %}
     <main class="page-shell detail-shell">
         <section class="page-heading">
             <div>
                 <p class="eyebrow">{{ detail.module|upper }} MODULE <span>/</span> SAVED RESULT</p>
                 <h1>{{ detail.target }}</h1>
-                <p class="subtitle">{{ detail.timestamp or 'Date unavailable' }} · {{ detail.status }}</p>
+                <p class="subtitle">{{ detail.timestamp or 'Date unavailable' }}</p>
             </div>
             <div class="detail-actions">
                 <a href="/history">Back to history</a>
                 <a href="/history/{{ detail.module|lower }}/{{ scan_id }}/export">Export JSON</a>
+                <button class="ai-context-trigger" type="button" data-ai-scan-id="{{ scan_id }}" data-ai-module="{{ detail.module|lower }}">Ask AI about this assessment</button>
             </div>
         </section>
 
         <dl class="detail-summary">
             <div class="detail-stat"><dt>MODULE</dt><dd>{{ detail.module }}</dd></div>
-            <div class="detail-stat"><dt>STATUS</dt><dd>{{ detail.status }}</dd></div>
+            <div class="detail-stat"><dt>STATUS</dt><dd><span class="history-status status-{{ detail.status|lower|replace(' ', '-') }}">{{ detail.status }}</span></dd></div>
             <div class="detail-stat"><dt>COVERAGE</dt><dd>{{ detail.coverage }}</dd></div>
             <div class="detail-stat"><dt>HOSTS</dt><dd>{{ detail.hosts|length }}</dd></div>
+            <div class="detail-stat"><dt>SERVICES</dt><dd>{{ detail.services|length }}</dd></div>
+            <div class="detail-stat"><dt>FINDINGS</dt><dd>{{ detail.findings|length }}</dd></div>
         </dl>
+
+        {% if not detail.hosts and detail.status|lower in ['cancelled', 'canceled'] %}
+        <p class="detail-callout callout-cancelled">This scan was cancelled before host-level results were saved. The summary below shows what was retained.</p>
+        {% elif not detail.hosts and detail.status|lower in ['failed', 'error'] %}
+        <p class="detail-callout callout-error">This scan did not produce host-level results. Review the recorded errors and limitations below.</p>
+        {% endif %}
 
         <section class="detail-section">
             <h2>Hosts reached</h2>
             {% if detail.hosts %}
             <div class="table-wrap">
                 <table class="detail-table">
-                    <thead><tr><th>HOST</th><th>NAME</th><th>MAC / VENDOR</th><th>OS MATCH</th><th>STATUS</th><th>OPEN PORTS</th><th>DISTANCE</th><th>UPTIME</th><th>RISK / NOTES</th></tr></thead>
+                    <thead><tr><th>HOST</th><th>NAME</th><th>MAC / VENDOR</th><th>OS MATCH</th><th>STATUS</th><th>OPEN PORTS</th><th>DISTANCE</th><th>UPTIME</th><th>RISK / NOTES</th><th>AI</th></tr></thead>
                     <tbody>
                         {% for host in detail.hosts %}
                         <tr>
@@ -70,13 +72,21 @@
                             <td>{{ host.distance or '—' }}</td>
                             <td>{% if host.uptime_seconds %}{{ host.uptime_seconds }} seconds{% elif host.last_boot %}Booted {{ host.last_boot }}{% else %}—{% endif %}</td>
                             <td>{% if host.risk %}{{ host.risk.level or host.risk.score or 'Recorded' }}{% elif host.risks %}{{ host.risks|length }} items{% else %}No host-level risk recorded{% endif %}</td>
+                            <td>
+                                <button class="ai-context-trigger" type="button" data-ai-scan-id="{{ scan_id }}" data-ai-module="{{ detail.module|lower }}" data-ai-host="{{ host.ip }}">Explain host</button>
+                                {% if detail.module == 'Defensive' %}
+                                {% for finding in host.risks if finding is mapping %}
+                                <button class="ai-context-trigger" type="button" data-ai-scan-id="{{ scan_id }}" data-ai-module="defensive" data-ai-host="{{ host.ip }}" data-ai-finding="def:{{ host.ip }}:{{ finding.port or '' }}:{{ finding.title or '' }}">Explain {{ finding.title or 'finding' }}</button>
+                                {% endfor %}
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-            <p class="detail-empty">No host-level details were retained for this older summary record.</p>
+            <p class="detail-empty">No host-level details are available in this saved report.</p>
             {% endif %}
         </section>
 
@@ -105,33 +115,49 @@
         {% endif %}
 
         <section class="detail-section">
-            <h2>Findings and limitations</h2>
+            <h2>Findings</h2>
             {% if detail.findings %}
             <ul class="detail-list">
                 {% for finding in detail.findings %}
-                <li>{% if finding is mapping %}{{ finding.severity or 'Finding' }}: {{ finding.title or finding.description or finding.summary or 'Recorded finding' }}{% else %}{{ finding }}{% endif %}</li>
+                <li>
+                    {% if finding is mapping %}
+                    {{ finding.severity or 'Finding' }}: {{ finding.title or finding.description or finding.summary or 'Recorded finding' }}
+                    {% if finding.id %}<button class="ai-context-trigger" type="button" data-ai-scan-id="{{ scan_id }}" data-ai-module="offensive" data-ai-host="{{ finding.target or '' }}" data-ai-finding="{{ finding.id }}">Explain finding</button>{% endif %}
+                    {% else %}{{ finding }}{% endif %}
+                </li>
                 {% endfor %}
             </ul>
             {% else %}
             <p class="detail-empty">No findings were recorded.</p>
             {% endif %}
-            {% if detail.limitations %}
+        </section>
+
+        {% if detail.limitations %}
+        <section class="detail-section">
+            <h2>Limitations</h2>
             <ul class="detail-list">
                 {% for limitation in detail.limitations %}<li>{{ limitation }}</li>{% endfor %}
             </ul>
-            {% endif %}
-            {% if detail.errors %}
+        </section>
+        {% endif %}
+
+        {% if detail.errors %}
+        <section class="detail-section detail-errors">
+            <h2>Errors</h2>
             <ul class="detail-list">
                 {% for error in detail.errors %}<li>{{ error }}</li>{% endfor %}
             </ul>
-            {% endif %}
         </section>
+        {% endif %}
 
         <details class="raw-report">
             <summary>View complete JSON record</summary>
             <pre>{{ detail.raw|tojson(indent=2) }}</pre>
         </details>
-        <footer>WiFi Sentinel <span>LOCAL SECURITY WORKSPACE</span></footer>
+        <footer>VulnScan v4.13 <span>LOCAL SECURITY WORKSPACE</span></footer>
     </main>
+            </div>
+    </div>
+    {% include "_ai_drawer.html" %}
 </body>
 </html>

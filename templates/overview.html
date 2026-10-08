@@ -3,34 +3,27 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f2f6f2">
+    <meta name="theme-color" content="#09121e">
     {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
-    <title>WiFi Sentinel | Overview</title>
+    <title>VulnScan v4.13 | Overview</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/overview.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared-shell.css') }}">
+    <script src="{{ url_for('static', filename='js/engine-status.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/ai-chat.js') }}" defer></script>
 </head>
-<body>
-    <header class="topbar">
-        <a class="brand" href="/" aria-label="WiFi Sentinel overview">
-            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span>WiFi <strong>Sentinel</strong></span>
-        </a>
-        <nav class="product-nav" aria-label="Product navigation">
-            <a class="is-current" href="/" aria-current="page">Overview</a>
-            <a href="/history">History</a>
-            <a href="/defensive">Defensive</a>
-            <a href="/offensive/">Offensive</a>
-        </nav>
-        {% if auth_enabled %}
-        <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit">Sign out</button>
-        </form>
-        {% endif %}
-    </header>
-
+<body data-mode="workspace">
+    <div class="app-shell">
+        {% with active_mode='overview' %}
+            {% include "_app_sidebar.html" %}
+            <div class="app-main">
+                {% include "_app_topbar.html" %}
+        {% endwith %}
     <main class="page-shell">
         <section class="page-heading">
             <div>
@@ -116,7 +109,7 @@
                             <td class="target-cell">{{ scan.target }}</td>
                             <td class="date-cell">{{ scan.timestamp[:16].replace('T', ' ') if scan.timestamp else 'Date unavailable' }}</td>
                             <td>{{ scan.detail }}</td>
-                            <td><span class="status-tag">{{ scan.status }}</span></td>
+                            <td><span class="status-tag status-{{ scan.status|lower|replace(' ', '-') }}">{{ scan.status }}</span></td>
                             <td><a class="row-link" href="{{ scan.detail_url }}">Details <span aria-hidden="true">&#8599;</span></a></td>
                         </tr>
                         {% else %}
@@ -126,7 +119,10 @@
                 </table>
             </div>
         </section>
-        <footer>WiFi Sentinel <span>LOCAL SECURITY WORKSPACE</span></footer>
+        <footer>VulnScan v4.13 <span>LOCAL SECURITY WORKSPACE</span></footer>
     </main>
+            </div>
+    </div>
+    {% include "_ai_drawer.html" %}
 </body>
 </html>

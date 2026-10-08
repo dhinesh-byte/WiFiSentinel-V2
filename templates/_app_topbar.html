@@ -1,0 +1,21 @@
+<header class="topbar">
+    <div class="topbar-title">
+        <span>SECURITY OPERATIONS</span>
+        <strong>{% if active_mode == 'defensive' %}Defensive assessment{% elif active_mode == 'offensive' %}Authorized assessment{% elif active_mode == 'proxy' %}HTTP traffic workbench{% elif active_mode == 'history' %}Assessment archive{% else %}Security overview{% endif %}</strong>
+    </div>
+    <div class="topbar-actions">
+        <div class="nmap-engine-badge" aria-live="polite" aria-label="Nmap engine status">
+            <span class="nmap-engine-indicator" id="nmap-engine-indicator" aria-hidden="true"></span>
+            <span class="engine-label">NMAP ENGINE</span>
+            <strong id="nmap-engine-status">CHECKING</strong>
+            <small id="nmap-engine-version">Version unavailable</small>
+        </div>
+        <span class="mode-pill mode-{{ active_mode }}">{{ active_mode|upper if active_mode in ['defensive', 'offensive', 'proxy'] else 'WORKSPACE' }}</span>
+        {% if auth_enabled %}
+        <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Sign out</button>
+        </form>
+        {% endif %}
+    </div>
+</header>

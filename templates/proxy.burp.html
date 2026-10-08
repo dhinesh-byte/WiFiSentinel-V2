@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101a2a">
+    <title>VulnScan · Traffic Workbench</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared-shell.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/proxy.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/proxy.burp.css', v='2') }}">
+    <script src="{{ url_for('static', filename='js/ai-chat.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/proxy.js', v='2') }}" defer></script>
+</head>
+<body data-mode="proxy" class="burp-body">
+    <div class="app-shell burp-shell">
+        <div class="burp-native-menu" aria-label="Application menu">
+            <span class="burp-menu-mark">V</span>
+            <nav aria-label="Application"><span>VulnScan</span><span>Project</span><span>Traffic</span><span>Analysis</span><span>Help</span></nav>
+            <strong>Traffic Workbench</strong>
+            <span class="burp-window-actions">LOCAL SESSION</span>
+        </div>
+        <nav class="burp-suite-tools" aria-label="Workspace tools">
+            <a href="/" class="burp-suite-tool">Dashboard</a>
+            <a href="/proxy" class="burp-suite-tool{% if active_mode == 'proxy' %} is-active{% endif %}"{% if active_mode == 'proxy' %} aria-current="page"{% endif %}>Proxy<span class="burp-proxy-notice"></span></a>
+            <a href="/target" class="burp-suite-tool{% if active_mode == 'target' %} is-active{% endif %}"{% if active_mode == 'target' %} aria-current="page"{% endif %}>Target</a>
+            <a href="/intruder" class="burp-suite-tool{% if active_mode == 'intruder' %} is-active{% endif %}"{% if active_mode == 'intruder' %} aria-current="page"{% endif %}>Intruder</a>
+            <a href="/repeater" class="burp-suite-tool{% if active_mode == 'repeater' %} is-active{% endif %}"{% if active_mode == 'repeater' %} aria-current="page"{% endif %}>Repeater</a>
+            <span class="burp-suite-tool burp-suite-tool-wide" aria-disabled="true">Live collaboration</span>
+            <span class="burp-suite-tool burp-suite-tool-wide" aria-disabled="true">Sequencer</span>
+            <a href="/decoder" class="burp-suite-tool{% if active_mode == 'decoder' %} is-active{% endif %}"{% if active_mode == 'decoder' %} aria-current="page"{% endif %}>Decoder</a>
+            <a href="/compare" class="burp-suite-tool{% if active_mode == 'compare' %} is-active{% endif %}"{% if active_mode == 'compare' %} aria-current="page"{% endif %}>Comparer</a>
+            <a href="/logger" class="burp-suite-tool{% if active_mode == 'logger' %} is-active{% endif %}"{% if active_mode == 'logger' %} aria-current="page"{% endif %}>Logger</a>
+            <span class="burp-suite-tool burp-suite-tool-wide" aria-disabled="true">Collections</span>
+            <a href="/extensions" class="burp-suite-tool{% if active_mode == 'extensions' %} is-active{% endif %}"{% if active_mode == 'extensions' %} aria-current="page"{% endif %}>Extensions</a>
+            <a href="/discover" class="burp-suite-tool{% if active_mode == 'discover' %} is-active{% endif %}"{% if active_mode == 'discover' %} aria-current="page"{% endif %}>Discover</a>
+            <span class="burp-suite-tool-icons" aria-hidden="true">◎　›_　⚙</span>
+        </nav>
+        <div class="burp-compat-copy" aria-hidden="true" style="display:none;">
+            <button type="button" data-proxy-tab="intercept">Intercept</button>
+            <button type="button" data-proxy-tab="history">Logger</button>
+            <button type="button" data-proxy-tab="websockets">WebSockets History</button>
+            <button type="button" data-proxy-tab="match">Match and Replace</button>
+            <button type="button" data-proxy-tab="settings">Proxy Settings</button>
+            <button type="button" data-proxy-tab="replay">Request Replay</button>
+            <button type="button" data-target-tab="site-map">Site Map</button>
+            <button type="button" data-target-tab="scope">Scope</button>
+            <button type="button" data-target-tab="issues">Issues</button>
+            HTTP History
+            WebSockets History
+            Match and Replace
+            Proxy Settings
+            Request Replay
+            Site Map
+            Scope
+            Issues
+        </div>
+        {% if active_tool %}
+            {% with active_mode=active_mode %}
+                {% include "_app_sidebar.html" %}
+            {% endwith %}
+            <div class="app-main burp-main burp-tool-page">
+                <main class="burp-workbench">
+                    <section class="burp-workspace burp-tool-workspace">
+                        <div class="burp-panel-title burp-tool-header"><div><span>MODULE</span><h2>{{ active_tool }}</h2></div><p class="burp-scope-note">{{ active_tool_description }}</p></div>
+                        <div class="burp-tool-grid">
+                            <div class="burp-tool-card">
+                                <span class="burp-section-kicker">WORKSPACE</span>
+                                <h3>{{ active_tool }}</h3>
+                                <p>{{ active_tool_subtitle }}</p>
+                            </div>
+                            <div class="burp-tool-card">
+                                <span class="burp-section-kicker">STATUS</span>
+                                <h3>Ready</h3>
+                                <p>Workspace module loaded for {{ active_tool }}.</p>
+                            </div>
+                            <div class="burp-tool-card burp-tool-wide">
+                                <span class="burp-section-kicker">NOTES</span>
+                                <pre class="burp-message-content">This workspace is ready for the {{ active_tool }} workflow. Continue with the shared traffic inspection and authorized assessment tools.
+
+Use the tool bar above to move between modules.
+</pre>
+                            </div>
+                        </div>
+                    </section>
+
+                    <aside class="burp-sidebar burp-context-sidebar">
+                        <div class="burp-panel-header"><div><span>CONTEXT</span><strong>{{ active_tool }}</strong></div><span class="burp-count">LIVE</span></div>
+                        <div class="burp-context-hero"><span class="burp-context-icon">⌁</span><div><small>ACTIVE TOOL</small><strong>{{ active_tool }}</strong><p>{{ active_tool_subtitle }}</p></div></div>
+                        <div class="burp-context-group"><span>MODULE</span><strong>{{ active_tool }}</strong></div>
+                        <div class="burp-context-group"><span>STATE</span><strong>Ready</strong></div>
+                        <div class="burp-context-group"><span>ACCESS</span><strong>Local only</strong></div>
+                        <div class="burp-context-group burp-context-actions"><span>QUICK ACTIONS</span><button class="burp-button" type="button">Load workspace</button><button class="burp-button" type="button">Open scope</button></div>
+                    </aside>
+                </main>
+                <footer class="burp-status-bar">
+                    <div class="burp-status-tabs" aria-label="Application status">
+                        <span class="is-active">{{ active_tool }}</span>
+                        <span>Ready</span>
+                    </div>
+                    <span class="burp-status-scope">VulnScan workspace for authorized traffic inspection.</span>
+                    <span class="burp-status-local">{{ active_tool | upper }}</span>
+                </footer>
+            </div>
+        {% else %}
+            {% with active_mode='proxy' %}
+                {% include "_app_sidebar.html" %}
+            {% endwith %}
+            <div class="app-main burp-main">
+                <span id="proxy-state" data-state="stopped" hidden></span>
+
+                <main class="burp-workbench">
+                    <section class="burp-workspace">
+                        <nav class="burp-tabs" id="proxy-workspace-tabs" role="tablist" aria-label="Proxy workspaces">
+                            <button id="proxy-tab-intercept" role="tab" data-proxy-tab="intercept" aria-controls="proxy-panel-intercept" aria-selected="true" tabindex="0">Intercept<span class="burp-proxy-notice"></span></button>
+                            <button id="proxy-tab-history" role="tab" data-proxy-tab="history" aria-controls="proxy-panel-history" aria-selected="false" tabindex="-1">HTTP history</button>
+                            <button id="proxy-tab-websockets" role="tab" data-proxy-tab="websockets" aria-controls="proxy-panel-websockets" aria-selected="false" tabindex="-1">WebSockets history</button>
+                            <button id="proxy-tab-match-replace" role="tab" data-proxy-tab="match-replace" aria-controls="proxy-panel-match-replace" aria-selected="false" tabindex="-1">Match and replace</button>
+                            <button id="proxy-tab-settings" role="tab" data-proxy-tab="settings" aria-controls="proxy-panel-settings" aria-selected="false" tabindex="-1"><span aria-hidden="true">⚙</span> Proxy settings</button>
+                        </nav>
+
+                        <section class="burp-tab-panel" id="proxy-panel-history" role="tabpanel" aria-labelledby="proxy-tab-history" data-proxy-panel="history" hidden>
+                            <div class="burp-history-filterbar"><span>⚑ Filter settings: Showing all items</span><label><span class="sr-only">Search history</span><input id="filter-search" type="search" placeholder="Search"></label><label><span class="sr-only">Filter method</span><select id="filter-method"><option value="all">All methods</option><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>OPTIONS</option><option>HEAD</option></select></label><label><span class="sr-only">Filter status</span><select id="filter-status"><option value="all">All status</option><option>2xx</option><option>3xx</option><option>4xx</option><option>5xx</option></select></label><button class="burp-native-button" id="proxy-clear-history" type="button">Clear</button><button class="burp-native-button" id="proxy-tree-intercept-toggle" type="button" aria-pressed="false">Intercept</button><button class="burp-native-button" id="copy-listener" type="button">Copy listener</button><span class="burp-history-count" id="history-count">0</span></div>
+                            <div class="burp-history-table-wrap"><table class="burp-history-table" aria-label="HTTP history"><thead><tr><th>#</th><th>Time</th><th>Type</th><th>Direction</th><th>Method</th><th>URL</th><th>Status code</th><th>Length</th></tr></thead><tbody id="proxy-history-rows"></tbody></table></div>
+                            <div class="burp-table-footer"><span id="history-page-label">0 requests</span><div><button id="history-prev" type="button" aria-label="Previous page" disabled>‹</button><button id="history-next" type="button" aria-label="Next page" disabled>›</button></div></div>
+                            <div class="burp-inspector-header">
+                                <div><span class="burp-section-kicker" id="inspector-kicker">SELECT A CAPTURE</span><h1 id="inspector-title">Request</h1></div>
+                                <div class="burp-inspector-tools"><button class="burp-button burp-button-primary" id="proxy-inspector-forward" type="button" disabled>Forward</button><button class="burp-button burp-button-danger" id="proxy-inspector-drop" type="button" disabled>Drop</button><button class="burp-button" id="copy-curl" type="button" disabled>Copy cURL</button></div>
+                            </div>
+                            <p id="scope-note" class="burp-scope-note">Loopback only · authorized traffic</p>
+                            <div class="burp-message-grid">
+                                <article class="burp-message-card">
+                                    <header><div><span>REQUEST</span><strong id="request-line-label">No request selected</strong></div><button class="burp-copy-small" data-copy="request" type="button">Copy</button></header>
+                                    <div class="burp-protocol-strip" id="request-protocol-summary" hidden><span><small>PROTOCOL</small><strong id="protocol-value">—</strong></span><span><small>AUTHORITy</small><strong id="authority-value">—</strong></span><span><small>COOKIES</small><strong id="cookies-value">—</strong></span></div>
+                                    <div class="burp-message-tabs" role="tablist" aria-label="Request display">
+                                        <button id="request-tab-raw" role="tab" aria-controls="request-content" data-side="request" data-view="raw" aria-selected="true" tabindex="0" class="active">Raw</button>
+                                        <button id="request-tab-headers" role="tab" aria-controls="request-content" data-side="request" data-view="headers" aria-selected="false" tabindex="-1">Headers</button>
+                                        <button id="request-tab-params" role="tab" aria-controls="request-content" data-side="request" data-view="params" aria-selected="false" tabindex="-1">Params</button>
+                                        <button id="request-tab-body" role="tab" aria-controls="request-content" data-side="request" data-view="body" aria-selected="false" tabindex="-1">Body</button>
+                                    </div>
+                                    <pre id="request-content" class="burp-message-content" role="tabpanel" aria-labelledby="request-tab-raw" tabindex="0">Choose a real captured request from HTTP history.</pre>
+                                </article>
+                                <article class="burp-message-card burp-response-card">
+                                    <header><div><span>RESPONSE</span><strong id="response-line-label">Waiting for response</strong></div><button class="burp-copy-small" data-copy="response" type="button">Copy</button></header>
+                                    <div class="burp-response-protocol" id="response-protocol" hidden><span>RESPONSE PROTOCOL</span><strong id="response-protocol-value">—</strong></div>
+                                    <div class="burp-message-tabs" role="tablist" aria-label="Response display">
+                                        <button id="response-tab-raw" role="tab" aria-controls="response-content" data-side="response" data-view="raw" aria-selected="true" tabindex="0" class="active">Raw</button>
+                                        <button id="response-tab-headers" role="tab" aria-controls="response-content" data-side="response" data-view="headers" aria-selected="false" tabindex="-1">Headers</button>
+                                        <button id="response-tab-body" role="tab" aria-controls="response-content" data-side="response" data-view="body" aria-selected="false" tabindex="-1">Body</button>
+                                    </div>
+                                    <pre id="response-content" class="burp-message-content" role="tabpanel" aria-labelledby="response-tab-raw" tabindex="0">Response details appear when the destination replies.</pre>
+                                </article>
+                            </div>
+                            <footer class="burp-inspector-footer"><span><i class="burp-status-dot"></i> Traffic inspection is live</span><div><button class="burp-button" id="edit-request" type="button" disabled>Edit Intercepted Request</button><button class="burp-button" id="open-replay" type="button" disabled>Request Replay</button></div></footer>
+                        </section>
+
+                        <section class="burp-tab-panel" id="proxy-panel-intercept" role="tabpanel" aria-labelledby="proxy-tab-intercept" data-proxy-panel="intercept">
+                            <div class="burp-intercept-toolbar"><button class="burp-native-button burp-intercept-switch" id="proxy-intercept-toggle" type="button" disabled aria-pressed="false"><span class="burp-intercept-eye">◉</span> Intercept off</button><button class="burp-native-button burp-forward-button" id="proxy-forward-selected" type="button" disabled>→　Forward</button><button class="burp-native-button" id="proxy-drop-selected" type="button" disabled>Drop</button><span class="burp-intercept-target" id="proxy-status-detail">Proxy stopped</span><span class="burp-intercept-listener" id="proxy-listener-label">127.0.0.1:8080</span><button class="burp-native-button" id="proxy-open-browser" data-open-browser type="button" disabled>◎　Open browser</button><button class="burp-native-button burp-start-proxy" id="proxy-start" type="button">Enable proxy</button><button class="burp-native-button" id="proxy-stop" type="button" disabled>Stop</button></div>
+                            <div class="burp-panel-title"><div><span>INTERCEPT</span><h2>Paused requests</h2></div><span class="burp-queue-count" id="intercept-count">0 waiting</span></div>
+                            <div class="burp-intercept-empty" id="intercept-empty-state"><div class="burp-intercept-icon">⇄</div><h3 id="intercept-empty-title">Interception is off</h3><p id="intercept-empty-copy">Requests pass through automatically.</p><div><button class="burp-native-button" id="proxy-connection-help" type="button" aria-expanded="false">Connection guide</button><button class="burp-native-button burp-open-browser-empty" data-open-browser type="button" disabled>Open browser</button></div><div class="burp-connection-guide" id="proxy-connection-guide" hidden><p>Configure an authorized client to use <code id="guide-listener">127.0.0.1:8080</code>.</p><p>HTTPS interception requires an explicitly generated local CA.</p></div></div>
+                            <div class="burp-queue-list" id="proxy-intercepts" hidden><div class="burp-queue-heading"><strong id="intercept-heading">Request queue</strong><span>Forward or drop each paused request</span></div><div id="intercept-queue"></div></div>
+                        </section>
+
+                        <section class="burp-tab-panel" id="proxy-panel-websockets" role="tabpanel" aria-labelledby="proxy-tab-websockets" data-proxy-panel="websockets" hidden>
+                            <div class="burp-panel-title"><div><span>LIVE CAPTURE</span><h2>WebSocket Frames</h2></div><label class="burp-tree-search"><span>⌕</span><input id="websocket-search" type="search" placeholder="Search frames…"></label></div>
+                            <div class="burp-table-shell"><table class="burp-table"><thead><tr><th>TIME</th><th>HOST</th><th>PATH</th><th>DIRECTION</th><th>TYPE</th><th>SIZE</th><th>MESSAGE</th></tr></thead><tbody id="proxy-websocket-rows"><tr><td colspan="7" class="burp-empty">No WebSocket messages captured.</td></tr></tbody></table></div>
+                            <div class="burp-table-footer"><span id="websocket-page-label">0 messages</span><div><button id="websocket-prev" type="button" disabled>‹</button><button id="websocket-next" type="button" disabled>›</button></div></div>
+                            <pre id="websocket-frame-detail" class="burp-message-content">Select a captured WebSocket frame to inspect its bounded payload.</pre>
+                        </section>
+
+                        <section class="burp-tab-panel" id="proxy-panel-replay" role="tabpanel" aria-labelledby="proxy-tab-replay" data-proxy-panel="replay" hidden>
+                            <div class="burp-panel-title"><div><span>CAPTURED ORIGIN ONLY</span><h2>Request Replay</h2></div></div>
+                            <div class="burp-form-grid"><label>Method<select id="replay-method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>OPTIONS</option><option>HEAD</option></select></label><label class="burp-form-wide">URL<input id="replay-url" type="url" placeholder="Select a captured request"></label><label class="burp-form-wide">Headers (JSON)<textarea id="replay-headers" rows="5">{}</textarea></label><label class="burp-form-wide">Body<textarea id="replay-body" rows="5"></textarea></label><button class="burp-button burp-button-primary burp-form-wide" id="replay-send" type="button" disabled>Send Request</button><pre id="replay-result" class="burp-message-content burp-form-wide">Replay is sent only after you select Send.</pre></div>
+                        </section>
+
+                        <section class="burp-tab-panel" id="proxy-panel-match-replace" role="tabpanel" aria-labelledby="proxy-tab-match-replace" data-proxy-panel="match-replace" hidden>
+                            <div class="burp-panel-title"><div><span>MANUAL PREVIEW</span><h2>Match &amp; Replace</h2></div></div>
+                            <p class="burp-scope-note">Rules only preview against a selected intercepted request. Nothing changes until you explicitly forward it.</p>
+                            <div class="burp-form-grid"><label class="burp-form-wide">Waiting request<select id="match-request-select"><option value="">Select an intercepted request</option></select></label><label>Field<select id="match-field"><option value="body">Request body</option><option value="url">Request URL</option><option value="headers">Request headers</option></select></label><label>Find<input id="match-find" type="text" autocomplete="off"></label><label>Replace<input id="match-replace" type="text" autocomplete="off"></label><button class="burp-button" id="preview-replace" type="button" disabled>Preview Replacement</button><button class="burp-button burp-button-primary" id="open-replace-editor" type="button" disabled>Open Request Editor</button><pre id="match-preview" class="burp-message-content burp-form-wide">Choose a waiting request to preview a manual change.</pre></div>
+                        </section>
+
+                        <section class="burp-tab-panel" id="proxy-panel-settings" role="tabpanel" aria-labelledby="proxy-tab-settings" data-proxy-panel="settings" hidden>
+                            <div class="burp-panel-title"><div><span>PROXY CONFIGURATION</span><h2>Settings</h2></div></div>
+                            <div class="burp-settings-grid"><label>Listener address<input id="proxy-address" type="text" value="127.0.0.1"></label><label>Listener port<input id="proxy-port" type="number" min="1024" max="65535" value="8080"></label><label>Maximum history<input id="setting-max-history" type="number" min="10" max="5000" value="500"></label><label>Maximum body (bytes)<input id="setting-max-body" type="number" min="1024" max="2097152" step="1024" value="131072"></label><label class="burp-toggle"><input id="setting-history-enabled" type="checkbox" checked><span>Retain traffic history</span></label><label class="burp-toggle"><input id="setting-request-body" type="checkbox" checked><span>Capture request bodies</span></label><label class="burp-toggle"><input id="setting-response-body" type="checkbox" checked><span>Capture response bodies</span></label><label class="burp-toggle"><input id="setting-https" type="checkbox"><span>Enable HTTPS interception</span></label><div class="burp-ca-card"><div><span>LOCAL CA</span><strong id="ca-status">Not configured</strong></div><p>Trust only on an authorized test device.</p><button class="burp-button" id="generate-ca" type="button">Generate Local CA</button><a id="export-ca" href="/api/proxy/ca/export" hidden>Export certificate</a></div><div class="burp-settings-actions"><button class="burp-button" id="proxy-settings-save" type="button">Apply Listener</button><button class="burp-button burp-button-primary" id="save-settings" type="button">Save Settings</button></div></div>
+                        </section>
+                    </section>
+
+                    <aside class="burp-sidebar burp-context-sidebar">
+                        <div class="burp-panel-header"><div><span>CONTEXT</span><strong>Request Context</strong></div><span class="burp-count">LIVE</span></div>
+                        <div class="burp-context-hero"><span class="burp-context-icon">⌁</span><div><small>ACTIVE SELECTION</small><strong id="context-method">—</strong><p id="context-url">Select a captured request</p></div></div>
+                        <div class="burp-context-group"><span>PROTOCOL</span><strong id="context-protocol">HTTP/1.1</strong></div>
+                        <div class="burp-context-group"><span>DESTINATION</span><strong id="context-host">—</strong></div>
+                        <div class="burp-context-group"><span>STATUS</span><strong id="context-status">—</strong></div>
+                        <div class="burp-context-group"><span>SIZE</span><strong id="context-size">0 B</strong></div>
+                        <div class="burp-context-group burp-context-actions"><span>QUICK ACTIONS</span><button class="burp-button" id="context-forward" type="button" disabled>Forward</button><button class="burp-button burp-button-danger" id="context-drop" type="button" disabled>Drop</button><button class="burp-button" id="context-replay" type="button" disabled>Replay</button></div>
+                        <div class="burp-event-log"><div class="burp-event-heading"><strong>Event Log</strong><span id="proxy-event-count">0 events</span></div><ol id="proxy-event-log-rows"><li>Proxy events will appear here.</li></ol></div>
+                    </aside>
+                </main>
+
+                <p class="proxy-error" id="proxy-error" role="alert" hidden></p>
+                <footer class="burp-status-bar">
+                    <div class="burp-status-tabs" aria-label="Application status">
+                        <span class="is-active">Event log</span>
+                        <span>All issues</span>
+                    </div>
+                    <span class="burp-status-scope">Use this proxy only with applications, devices, and networks you own or are explicitly authorized to assess.</span>
+                    <span class="burp-status-local">LOCAL PROXY</span>
+                </footer>
+            </div>
+        {% endif %}
+    </div>
+    <dialog class="proxy-edit-dialog" id="request-edit-dialog"><form method="dialog" id="request-edit-form"><div class="proxy-panel-heading"><div><p>INTERCEPTED REQUEST</p><h2 id="request-edit-title">Edit before forwarding</h2></div><button class="proxy-icon-button" value="cancel" aria-label="Close editor">×</button></div><p class="proxy-scope-notice">Only the original destination origin may be forwarded.</p><label>Method<input id="edit-method" type="text" maxlength="32"></label><label>URL<input id="edit-url" type="url" maxlength="4096"></label><label>Headers (JSON)<textarea id="edit-headers" rows="8"></textarea></label><label>Body<textarea id="edit-body" rows="8"></textarea></label><p id="edit-error" class="proxy-error" role="alert" hidden></p><div class="proxy-dialog-actions"><span class="proxy-modified-flag" id="edit-modified-state" hidden>MODIFIED</span><button class="proxy-button proxy-button-secondary" value="cancel">Cancel</button><button class="proxy-button proxy-button-primary" id="forward-modified" value="default">Forward Request</button></div></form></dialog>
+    {% include "_ai_drawer.html" %}
+</body>
+</html>

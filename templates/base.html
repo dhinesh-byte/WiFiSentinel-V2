@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
+    <title>{% block title %}VulnScan v4.13{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/tokens.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/css/modes.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/ai.css">
+    <link rel="stylesheet" href="/static/css/shared-shell.css">
+    {% block head %}{% endblock %}
+    <script src="/static/js/nmap-console.js" defer></script>
+    <script src="/static/js/dashboard.js" defer></script>
+    <script src="/static/js/ai-chat.js" defer></script>
+</head>
+<body data-mode="{% block mode %}defensive{% endblock %}">
+    <div class="app-shell">
+        {% with active_mode='defensive' %}
+            {% include "_app_sidebar.html" %}
+            <div class="app-main">
+                {% include "_app_topbar.html" %}
+        {% endwith %}
+                <main class="main-content">
+            {% block content %}{% endblock %}
+                </main>
+            </div>
+    </div>
+    {% include "_ai_drawer.html" %}
+</body>
+</html>

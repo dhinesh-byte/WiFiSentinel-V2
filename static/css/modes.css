@@ -1,0 +1,62 @@
+body[data-mode="defensive"] {
+    --mode-accent: var(--accent-cyan);
+    --mode-accent-soft: rgba(72, 182, 202, 0.12);
+    --mode-accent-strong: rgba(72, 182, 202, 0.3);
+}
+
+body[data-mode="offensive"] {
+    --mode-accent: var(--danger);
+    --mode-accent-soft: rgba(216, 120, 104, 0.12);
+    --mode-accent-strong: rgba(216, 120, 104, 0.28);
+}
+
+.brand-icon,
+.nav-item.active,
+.scan-button,
+.status-dot,
+.mode-switcher a.is-current,
+.metric-primary,
+.scan-step.active,
+.severity-badge,
+.device-tag,
+.risk-badge {
+    box-shadow: none;
+}
+
+.nav-item.active {
+    background: var(--mode-accent-soft);
+    border: 1px solid var(--mode-accent-strong);
+}
+
+.brand-icon {
+    background: var(--mode-accent-soft);
+}
+
+.scan-button {
+    background: var(--mode-accent);
+}
+
+.metric-primary strong,
+.metric .metric-label,
+.section-index,
+.eyebrow,
+.state-label,
+.status-indicator {
+    color: var(--mode-accent);
+}
+
+.scan-settings-card,
+.scan-modal,
+.content-section,
+.metric,
+.device-card,
+.risk-card {
+    border-color: rgba(255,255,255,0.08);
+}
+
+.mode-label {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}

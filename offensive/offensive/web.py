@@ -28,11 +28,14 @@ _HEADER_NAMES = (
     "x-frame-options",
     "referrer-policy",
     "permissions-policy",
+    "allow",
+    "content-type",
 )
+_RESOURCE_PATHS = ("/robots.txt", "/.well-known/security.txt")
 
 
 class WebTLSAssessment:
-    """Collect basic HTTP response and TLS handshake facts without crawling."""
+    """Collect bounded HTTP and TLS observations without crawling directories."""
 
     def __init__(self, timeout: float = 4.0, max_services_per_host: int = 8) -> None:
         self.timeout = max(1.0, min(timeout, 10.0))
@@ -110,7 +113,7 @@ class WebTLSAssessment:
                 inspected += 1
                 observation = self._inspect_service(target, entry, server_name)
                 observations.append(observation)
-                if observation["status"] != "completed":
+                if observation["status"] != "completed" or observation["errors"]:
                     incomplete = True
                     errors.extend(observation["errors"])
 
@@ -122,7 +125,7 @@ class WebTLSAssessment:
             "services": observations,
             "errors": self._unique(errors),
             "limitations": self._unique(limitations),
-            "method": "One HTTP HEAD request per selected endpoint; TLS handshake only for HTTPS.",
+            "method": "HTTP HEAD and OPTIONS plus two standard resource paths; TLS handshake only for HTTPS.",
         }
 
     def _inspect_service(
@@ -147,6 +150,8 @@ class WebTLSAssessment:
             "server_header": None,
             "technology_header": None,
             "response_headers": {},
+            "methods": [],
+            "resources": [],
             "missing_security_headers": [],
             "tls": None,
             "detection_method": "single HTTP HEAD request; TLS handshake for HTTPS",
@@ -165,6 +170,38 @@ class WebTLSAssessment:
             observation["redirect_location"] = headers.get("location")
             observation["server_header"] = headers.get("server")
             observation["technology_header"] = headers.get("x-powered-by")
+            try:
+                _, options_headers = self._auxiliary_request(
+                    target, port, server_name, "OPTIONS", "/", use_tls
+                )
+                allow_header = options_headers.get("allow") or headers.get("allow")
+                if allow_header:
+                    observation["methods"] = sorted(
+                        {method.strip().upper() for method in allow_header.split(",") if method.strip()}
+                    )
+            except (OSError, ssl.SSLError, http.client.HTTPException, ValueError) as exc:
+                observation["errors"].append(f"HTTP OPTIONS check failed: {exc}")
+
+            for path in _RESOURCE_PATHS:
+                try:
+                    resource_status, resource_headers = self._auxiliary_request(
+                        target, port, server_name, "GET", path, use_tls
+                    )
+                    found = resource_status not in {404, 410}
+                    observation["resources"].append(
+                        {
+                            "path": path,
+                            "status": resource_status,
+                            "content_type": resource_headers.get("content-type"),
+                            "found": found,
+                        }
+                    )
+                    if found:
+                        observation["evidence"].append(
+                            f"Standard resource {path} returned HTTP {resource_status}; response body was not retained."
+                        )
+                except (OSError, ssl.SSLError, http.client.HTTPException, ValueError) as exc:
+                    observation["errors"].append(f"Resource check {path} failed: {exc}")
             relevant_headers = [
                 "content-security-policy",
                 "x-content-type-options",
@@ -195,6 +232,15 @@ class WebTLSAssessment:
                     observation["evidence"].append(
                         f"Peer certificate expiry reported as {tls['certificate_expires']}."
                     )
+                for field in ("subject", "issuer", "certificate_valid_from"):
+                    if tls.get(field):
+                        observation["evidence"].append(
+                            f"TLS {field.replace('_', ' ')}: {tls[field]}"
+                        )
+            if observation["methods"]:
+                observation["evidence"].append(
+                    "OPTIONS reported methods: " + ", ".join(observation["methods"]) + "."
+                )
             if observation["missing_security_headers"]:
                 observation["evidence"].append(
                     "The HEAD response did not include: "
@@ -208,6 +254,10 @@ class WebTLSAssessment:
                 observation["tls"] = {
                     "certificate_verified": False,
                     "verification_error": str(exc),
+                    "remediation": (
+                        "Check the certificate chain, hostname, validity, and key strength. "
+                        "Certificate verification remains enabled."
+                    ),
                 }
                 observation["evidence"].append(
                     f"Standard TLS certificate verification failed: {exc}"
@@ -238,6 +288,52 @@ class WebTLSAssessment:
         finally:
             connection.close()
 
+    def _auxiliary_request(
+        self,
+        target: str,
+        port: int,
+        server_name: str,
+        method: str,
+        path: str,
+        use_tls: bool,
+    ) -> tuple[int, dict[str, str]]:
+        headers = {
+            "Host": server_name,
+            "User-Agent": "WiFiSentinel-AuthorizedAssessment/2.0",
+            "Connection": "close",
+        }
+        if not use_tls:
+            connection = http.client.HTTPConnection(target, port, timeout=self.timeout)
+            try:
+                connection.request(method, path, headers=headers)
+                response = connection.getresponse()
+                response_headers = self._selected_headers(response.getheaders())
+                if method == "GET":
+                    response.read(4096)
+                return response.status, response_headers
+            finally:
+                connection.close()
+
+        raw_socket = socket.create_connection((target, port), timeout=self.timeout)
+        try:
+            context = ssl.create_default_context()
+            with context.wrap_socket(raw_socket, server_hostname=server_name) as tls_socket:
+                request = (
+                    f"{method} {path} HTTP/1.1\r\nHost: {server_name}\r\n"
+                    "User-Agent: WiFiSentinel-AuthorizedAssessment/2.0\r\n"
+                    "Connection: close\r\n\r\n"
+                ).encode("ascii")
+                tls_socket.sendall(request)
+                response = http.client.HTTPResponse(tls_socket)
+                response.begin()
+                response_headers = self._selected_headers(response.getheaders())
+                if method == "GET":
+                    response.read(4096)
+                return response.status, response_headers
+        except Exception:
+            raw_socket.close()
+            raise
+
     def _https_head(
         self,
         target: str,
@@ -257,6 +353,9 @@ class WebTLSAssessment:
                     "certificate_expires": expiry,
                     "certificate_days_remaining": self._days_remaining(expiry),
                     "certificate_verified": True,
+                    "subject": self._certificate_name(certificate.get("subject")),
+                    "issuer": self._certificate_name(certificate.get("issuer")),
+                    "certificate_valid_from": certificate.get("notBefore"),
                 }
                 request = (
                     f"HEAD / HTTP/1.1\r\nHost: {server_name}\r\n"
@@ -271,6 +370,18 @@ class WebTLSAssessment:
         except Exception:
             raw_socket.close()
             raise
+
+    @staticmethod
+    def _certificate_name(value: Any) -> str | None:
+        if not isinstance(value, tuple):
+            return None
+        parts = [
+            f"{key}={item}"
+            for relative_name in value
+            for key, item in relative_name
+            if isinstance(key, str) and isinstance(item, str)
+        ]
+        return ", ".join(parts) or None
 
     @staticmethod
     def _selected_headers(headers: list[tuple[str, str]]) -> dict[str, str]:

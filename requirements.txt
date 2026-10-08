@@ -1,4 +1,5 @@
 Flask
 #install flask
 waitress>=3.0,<4.0
+mitmproxy>=12.2.3,<13.0
 #

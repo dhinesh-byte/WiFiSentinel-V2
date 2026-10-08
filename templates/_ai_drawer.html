@@ -1,0 +1,38 @@
+<aside class="ai-drawer" id="ai-drawer" role="complementary" aria-label="VulnScan AI" aria-hidden="true">
+    <header class="ai-header">
+        <div class="ai-brand-mark" aria-hidden="true">AI</div>
+        <div class="ai-heading-copy">
+            <strong>VulnScan AI</strong>
+            <span>Personal security mentor</span>
+        </div>
+        <span class="ai-request-state" id="ai-request-state" aria-live="polite">CHECKING</span>
+        <span class="ai-status-indicator" id="ai-status-indicator" aria-label="Checking AI status"></span>
+        <button class="ai-icon-button" id="ai-close" type="button" aria-label="Close AI assistant" title="Close">×</button>
+    </header>
+
+    <section class="ai-context" aria-labelledby="ai-context-title">
+        <div class="ai-context-heading">
+            <strong id="ai-context-title">AI CONTEXT</strong>
+            <span id="ai-context-state">No assessment selected.</span>
+        </div>
+        <div class="ai-context-meta" id="ai-context-meta">Evidence is loaded from saved VulnScan reports.</div>
+    </section>
+
+    <div class="ai-transcript" id="ai-transcript" role="log" aria-live="polite" aria-relevant="additions text" aria-label="AI conversation">
+        <article class="ai-message ai-message-assistant">
+            <div class="ai-message-label">VulnScan AI</div>
+            <p>Hi. Ask me about cybersecurity or the selected assessment. I’ll use saved evidence when it’s available and tell you when something is uncertain.</p>
+            <time></time>
+        </article>
+    </div>
+
+    <form class="ai-composer" id="ai-composer">
+        <label class="visually-hidden" for="ai-input">Ask VulnScan AI</label>
+        <textarea id="ai-input" rows="2" maxlength="4000" placeholder="Ask a cybersecurity question..." required></textarea>
+        <button class="ai-send" id="ai-send" type="submit" aria-label="Send message" title="Send">↑</button>
+    </form>
+    <div class="ai-footer">
+        <span id="ai-availability">Checking AI configuration...</span>
+        <button type="button" id="ai-clear-conversation">Clear conversation</button>
+    </div>
+</aside>

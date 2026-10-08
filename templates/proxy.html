@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#09121e">
+    {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
+    <title>VulnScan Proxy | HTTP Traffic Workbench</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared-shell.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/proxy.css') }}">
+    <script src="{{ url_for('static', filename='js/ai-chat.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/proxy.js') }}" defer></script>
+</head>
+<body data-mode="proxy">
+    <div class="app-shell">
+        {% with active_mode='proxy' %}
+            {% include "_app_sidebar.html" %}
+            <div class="app-main">
+                <header class="topbar proxy-topbar">
+                    <div class="topbar-title">
+                        <span>SECURITY OPERATIONS / PROXY</span>
+                        <strong>HTTP traffic workbench</strong>
+                    </div>
+                    <div class="topbar-actions">
+                        <div class="proxy-state" id="proxy-state" data-state="stopped" aria-live="polite">
+                            <span aria-hidden="true"></span><strong id="proxy-state-label">PROXY STOPPED</strong>
+                            <small id="proxy-listener-label">127.0.0.1:8080</small>
+                        </div>
+                        <span class="mode-pill mode-proxy">PROXY</span>
+                        {% if auth_enabled %}
+                        <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit">Sign out</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </header>
+                <main class="main-content proxy-main">
+                    <section class="proxy-intro">
+                        <div>
+                            <p class="proxy-eyebrow">VULNSCAN PROXY <span>·</span> AUTHORIZED TESTING</p>
+                            <h1>HTTP traffic workbench</h1>
+                            <p>Inspect real HTTP traffic, manage intercepts, and replay selected requests.</p>
+                        </div>
+                        <div class="proxy-primary-actions">
+                            <button class="proxy-button proxy-button-primary" id="proxy-start" type="button">Enable</button>
+                            <button class="proxy-button proxy-button-danger" id="proxy-stop" type="button" disabled>Stop Proxy</button>
+                            <button class="proxy-button proxy-button-secondary" id="proxy-open-browser" data-open-browser type="button" disabled>Open browser</button>
+                        </div>
+                    </section>
+
+                    <section class="proxy-listener-banner" id="proxy-listener-banner" aria-live="polite" hidden>
+                        <span class="proxy-banner-info" aria-hidden="true">i</span>
+                        <span id="proxy-listener-banner-text">No proxy listeners are currently running</span>
+                        <button class="proxy-button proxy-button-secondary" id="proxy-enable" type="button">Enable</button>
+                        <button class="proxy-banner-close" id="proxy-banner-close" type="button" aria-label="Dismiss listener notice">×</button>
+                    </section>
+
+                    <p class="proxy-scope-notice">Use Proxy only with applications, devices, and networks you own or are explicitly authorized to test.</p>
+                    <p class="proxy-error" id="proxy-error" role="alert" hidden></p>
+
+                    <section class="proxy-control-strip" aria-label="Intercept controls">
+                        <button class="proxy-intercept-toggle" id="proxy-intercept-toggle" type="button" aria-pressed="false" disabled>Intercept off</button>
+                        <button class="proxy-button proxy-button-primary" id="proxy-forward-selected" type="button" disabled>Forward</button>
+                        <button class="proxy-button proxy-button-danger" id="proxy-drop-selected" type="button" disabled>Drop</button>
+                        <span class="proxy-toolbar-spacer"></span>
+                        <button class="proxy-button proxy-button-secondary" id="copy-listener" type="button">Copy listener</button>
+                        <span class="proxy-actual-listener" id="proxy-status-detail">Proxy stopped</span>
+                    </section>
+
+                    <nav class="proxy-workspace-tabs" role="tablist" aria-label="Proxy workspaces">
+                        <button type="button" role="tab" data-proxy-tab="intercept" aria-selected="true">Intercept</button>
+                        <button type="button" role="tab" data-proxy-tab="history" aria-selected="false">HTTP history</button>
+                        <button type="button" role="tab" data-proxy-tab="websockets" aria-selected="false">WebSockets history</button>
+                        <button type="button" role="tab" data-proxy-tab="match-replace" aria-selected="false">Match and replace</button>
+                        <button type="button" role="tab" data-proxy-tab="replay" aria-selected="false">Request replay</button>
+                        <button type="button" role="tab" data-proxy-tab="settings" aria-selected="false">Proxy settings</button>
+                    </nav>
+
+                    <section class="proxy-metrics" aria-label="Live proxy traffic statistics">
+                        <div><span>REQUESTS</span><strong id="stat-requests">0</strong></div>
+                        <div><span>RESPONSES</span><strong id="stat-responses">0</strong></div>
+                        <div><span>2XX</span><strong id="stat-2xx">0</strong></div>
+                        <div><span>3XX</span><strong id="stat-3xx">0</strong></div>
+                        <div><span>4XX</span><strong id="stat-4xx">0</strong></div>
+                        <div><span>5XX</span><strong id="stat-5xx">0</strong></div>
+                        <div><span>HTTPS</span><strong id="stat-https">0</strong></div>
+                        <div><span>ERRORS</span><strong id="stat-errors">0</strong></div>
+                        <div><span>INTERCEPTED</span><strong id="stat-intercepted">0</strong></div>
+                    </section>
+
+                    <section class="proxy-tab-panel proxy-workspace" data-proxy-panel="history" aria-label="HTTP traffic history and inspector" hidden>
+                        <div class="proxy-history-panel">
+                            <div class="proxy-panel-heading">
+                                <div><p>LIVE CAPTURE</p><h2>HTTP history</h2></div>
+                                <button class="proxy-text-button" id="proxy-clear-history" type="button">Clear history</button>
+                            </div>
+                            <div class="proxy-filter-grid">
+                                <label class="proxy-search">Search<input id="filter-search" type="search" placeholder="Host, path, headers..."></label>
+                                <label>Method<select id="filter-method"><option value="all">All methods</option><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>OPTIONS</option><option>HEAD</option></select></label>
+                                <label>Status<select id="filter-status"><option value="all">All statuses</option><option>2xx</option><option>3xx</option><option>4xx</option><option>5xx</option></select></label>
+                                <label>Content type<select id="filter-content-type"><option value="all">All types</option><option value="html">HTML</option><option value="json">JSON</option><option value="xml">XML</option><option value="javascript">JavaScript</option><option value="css">CSS</option><option value="images">Images</option><option value="other">Other</option></select></label>
+                                <label>Host<input id="filter-host" type="search" placeholder="host"></label>
+                                <label>Path<input id="filter-path" type="search" placeholder="/path"></label>
+                            </div>
+                            <div class="proxy-table-wrap">
+                                <table class="proxy-history-table">
+                                    <thead><tr><th>METHOD</th><th>HOST</th><th>PATH</th><th>STATUS</th><th>TYPE</th><th>SIZE</th></tr></thead>
+                                    <tbody id="proxy-history-rows"><tr><td colspan="6" class="proxy-empty">No captured traffic yet. Configure a client to use the listener above.</td></tr></tbody>
+                                </table>
+                            </div>
+                            <div class="proxy-pagination"><span id="history-page-label">0 requests</span><button class="proxy-icon-button" id="history-prev" type="button" aria-label="Previous page" disabled>←</button><button class="proxy-icon-button" id="history-next" type="button" aria-label="Next page" disabled>→</button></div>
+                        </div>
+
+                        <div class="proxy-inspector-panel">
+                            <div class="proxy-panel-heading">
+                                <div><p id="inspector-kicker">SELECT A CAPTURE</p><h2 id="inspector-title">Request inspector</h2></div>
+                                <div class="proxy-inspector-actions">
+                                    <button class="proxy-button proxy-button-primary proxy-inspector-action" id="proxy-inspector-forward" type="button" disabled>Forward</button>
+                                    <button class="proxy-button proxy-button-danger proxy-inspector-action" id="proxy-inspector-drop" type="button" disabled>Drop</button>
+                                    <button class="proxy-icon-button" id="copy-curl" type="button" title="Copy as cURL" aria-label="Copy as cURL" disabled>⌘</button>
+                                    <button class="proxy-icon-button" id="analyze-request" type="button" title="Analyze selected request with VulnScan AI" aria-label="Analyze selected request with VulnScan AI" disabled>AI</button>
+                                </div>
+                            </div>
+                            <div class="proxy-inspector-body" id="proxy-inspector-body">
+                                <section class="proxy-message-inspector">
+                                    <div class="proxy-message-heading"><h3>REQUEST</h3><span id="request-line-label">No request selected</span></div>
+                                    <div class="proxy-protocol-summary" id="request-protocol-summary" hidden>
+                                        <div><span>PROTOCOL</span><strong id="protocol-value">—</strong></div>
+                                        <div><span>AUTHORITY</span><strong id="authority-value">—</strong></div>
+                                        <div><span>COOKIES</span><strong id="cookies-value">—</strong></div>
+                                    </div>
+                                    <div class="proxy-tabs" role="tablist" aria-label="Request representation">
+                                        <button type="button" role="tab" data-side="request" data-view="raw" aria-selected="true">Raw</button>
+                                        <button type="button" role="tab" data-side="request" data-view="headers" aria-selected="false">Headers</button>
+                                        <button type="button" role="tab" data-side="request" data-view="params" aria-selected="false">Params</button>
+                                        <button type="button" role="tab" data-side="request" data-view="body" aria-selected="false">Body</button>
+                                        <button class="proxy-copy-button" type="button" data-copy="request">Copy</button>
+                                    </div>
+                                    <pre class="proxy-message-content" id="request-content" tabindex="0">Choose a real captured request from HTTP history.</pre>
+                                </section>
+                                <section class="proxy-message-inspector">
+                                    <div class="proxy-message-heading"><h3>RESPONSE</h3><span id="response-line-label">Waiting for response</span></div>
+                                    <div class="proxy-response-protocol" id="response-protocol" hidden><span>RESPONSE PROTOCOL</span><strong id="response-protocol-value">—</strong></div>
+                                    <div class="proxy-tabs" role="tablist" aria-label="Response representation">
+                                        <button type="button" role="tab" data-side="response" data-view="raw" aria-selected="true">Raw</button>
+                                        <button type="button" role="tab" data-side="response" data-view="headers" aria-selected="false">Headers</button>
+                                        <button type="button" role="tab" data-side="response" data-view="body" aria-selected="false">Body</button>
+                                        <button class="proxy-copy-button" type="button" data-copy="response">Copy</button>
+                                    </div>
+                                    <pre class="proxy-message-content" id="response-content" tabindex="0">Response details appear when the destination replies.</pre>
+                                </section>
+                            </div>
+                            <div class="proxy-inspector-footer"><button class="proxy-button proxy-button-secondary" id="edit-request" type="button" disabled>Edit intercepted request</button><button class="proxy-button proxy-button-secondary" id="open-replay" type="button" disabled>Request replay</button></div>
+                        </div>
+                    </section>
+
+                    <section class="proxy-tab-panel proxy-websocket-panel" data-proxy-panel="websockets" aria-label="WebSocket history" hidden>
+                        <div class="proxy-panel-heading"><div><p>LIVE CAPTURE</p><h2>WebSockets history</h2></div><label class="proxy-search">Search<input id="websocket-search" type="search" placeholder="Host, direction, payload..."></label></div>
+                        <div class="proxy-table-wrap">
+                            <table class="proxy-history-table proxy-websocket-table">
+                                <thead><tr><th>TIME</th><th>HOST</th><th>PATH</th><th>DIRECTION</th><th>TYPE</th><th>SIZE</th><th>MESSAGE</th></tr></thead>
+                                <tbody id="proxy-websocket-rows"><tr><td colspan="7" class="proxy-empty">No WebSocket messages captured.</td></tr></tbody>
+                            </table>
+                        </div>
+                        <div class="proxy-pagination"><span id="websocket-page-label">0 messages</span><button class="proxy-icon-button" id="websocket-prev" type="button" aria-label="Previous WebSocket page" disabled>←</button><button class="proxy-icon-button" id="websocket-next" type="button" aria-label="Next WebSocket page" disabled>→</button></div>
+                        <pre id="websocket-frame-detail" class="proxy-message-content">Select a captured WebSocket frame to inspect its bounded payload.</pre>
+                    </section>
+
+                    <section class="proxy-tab-panel proxy-match-panel" data-proxy-panel="match-replace" aria-label="Manual match and replace" hidden>
+                        <div class="proxy-panel-heading"><div><p>MANUAL PREVIEW · NO AUTOMATIC CHANGES</p><h2>Match and replace</h2></div></div>
+                        <p class="proxy-scope-notice">Rules only preview changes against a selected intercepted request. Nothing is changed until you open the request editor and explicitly forward it.</p>
+                        <div class="proxy-match-form">
+                            <label>Waiting request<select id="match-request-select"><option value="">Select an intercepted request</option></select></label>
+                            <label>Field<select id="match-field"><option value="body">Request body</option><option value="url">Request URL</option><option value="headers">Request headers</option></select></label>
+                            <label>Find (literal text)<input id="match-find" type="text" autocomplete="off"></label>
+                            <label>Replace with<input id="match-replace" type="text" autocomplete="off"></label>
+                            <button class="proxy-button proxy-button-secondary" id="preview-replace" type="button" disabled>Preview replacement</button>
+                            <pre id="match-preview" class="proxy-message-content">Choose a waiting request to preview a manual change.</pre>
+                            <button class="proxy-button proxy-button-primary" id="open-replace-editor" type="button" disabled>Open request editor</button>
+                        </div>
+                    </section>
+
+                    <section class="proxy-tab-panel proxy-intercept-panel" data-proxy-panel="intercept" aria-label="Intercept workspace">
+                        <div class="proxy-intercept-empty" id="intercept-empty-state">
+                            <span class="proxy-intercept-mark" aria-hidden="true">⇄</span>
+                            <h2 id="intercept-empty-title">Interception is off</h2>
+                            <p id="intercept-empty-copy">Requests pass through automatically. Turn interception on to pause each new request for review.</p>
+                            <div class="proxy-intercept-empty-actions"><button class="proxy-button proxy-button-secondary" id="proxy-connection-help" type="button" aria-expanded="false">Connection guide</button><button class="proxy-button proxy-button-primary" data-open-browser type="button" disabled>Open browser</button></div>
+                            <div class="proxy-connection-guide" id="proxy-connection-guide" hidden><p>Configure an authorized browser to use <code id="guide-listener">127.0.0.1:8080</code>. Chrome bypasses loopback by default; Open browser starts an isolated temporary profile through this listener.</p><p>HTTPS remains tunneled unless you explicitly generate and trust the VulnScan Proxy CA, then enable HTTPS interception.</p></div>
+                        </div>
+                        <section class="proxy-intercepts" id="proxy-intercepts" aria-labelledby="intercept-heading" hidden>
+                            <div class="proxy-panel-heading">
+                                <div><p>MANUAL GATE</p><h2 id="intercept-heading">Paused requests</h2></div>
+                                <span class="proxy-queue-count" id="intercept-count">0 waiting</span>
+                            </div>
+                            <p class="proxy-pause-notice">The browser request is paused. Forward it to continue, or Drop it to stop the request from reaching the destination.</p>
+                            <div id="intercept-queue" class="proxy-queue-list"><p class="proxy-empty">No requests waiting for a decision.</p></div>
+                        </section>
+                    </section>
+
+                    <section class="proxy-tab-panel proxy-lower-grid" data-proxy-panel="tools" hidden>
+                        <details class="proxy-settings-panel" data-proxy-tool="settings">
+                            <summary><span>Proxy settings</span><span>HISTORY · CAPTURE · HTTPS</span></summary>
+                            <div class="proxy-settings-grid">
+                                <label>Listener address<input id="proxy-address" type="text" value="127.0.0.1" autocomplete="off" spellcheck="false"></label>
+                                <label>Listener port<input id="proxy-port" type="number" value="8080" min="1024" max="65535"></label>
+                                <label>Maximum history entries<input id="setting-max-history" type="number" min="10" max="5000" value="500"></label>
+                                <label>Maximum captured body (bytes)<input id="setting-max-body" type="number" min="1024" max="2097152" step="1024" value="131072"></label>
+                                <label class="proxy-toggle"><input id="setting-history-enabled" type="checkbox" checked><span>Retain traffic history in memory</span></label>
+                                <label class="proxy-toggle"><input id="setting-request-body" type="checkbox" checked><span>Capture request bodies</span></label>
+                                <label class="proxy-toggle"><input id="setting-response-body" type="checkbox" checked><span>Capture response bodies</span></label>
+                                <label class="proxy-toggle proxy-warning-toggle"><input id="setting-https" type="checkbox"><span>Enable HTTPS interception</span></label>
+                                <div class="proxy-ca-status"><span>Local CA</span><strong id="ca-status">Not configured</strong><p>Stop the Proxy before generation. Install and trust this certificate only on devices and test applications you own or are authorized to assess. VulnScan never installs it automatically.</p><button class="proxy-button proxy-button-secondary" id="generate-ca" type="button">Generate Local CA</button><a id="export-ca" href="/api/proxy/ca/export" hidden>Export public CA certificate</a></div>
+                                <div class="proxy-settings-actions"><button class="proxy-button proxy-button-secondary" id="proxy-settings-save" type="button">Apply listener</button><button class="proxy-button proxy-button-primary" id="save-settings" type="button">Save proxy settings</button></div>
+                            </div>
+                        </details>
+                        <details class="proxy-replay-panel" id="replay-panel" data-proxy-tool="replay">
+                            <summary><span>Request replay</span><span>MANUAL SEND · CAPTURED ORIGIN ONLY</span></summary>
+                            <div class="proxy-replay-form">
+                                <label>Method<select id="replay-method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>OPTIONS</option><option>HEAD</option></select></label>
+                                <label>URL<input id="replay-url" type="url" placeholder="Select a captured request"></label>
+                                <label>Headers (JSON)<textarea id="replay-headers" rows="5" spellcheck="false">{}</textarea></label>
+                                <label>Body<textarea id="replay-body" rows="5" spellcheck="false"></textarea></label>
+                                <button class="proxy-button proxy-button-primary" id="replay-send" type="button" disabled>Send request</button>
+                                <pre id="replay-result" class="proxy-message-content">Replay is sent only after you select Send.</pre>
+                            </div>
+                        </details>
+                    </section>
+
+                    <details class="proxy-event-log" id="proxy-event-log">
+                        <summary><span>Event log</span><span id="proxy-event-count">0 events</span></summary>
+                        <ol id="proxy-event-log-rows" aria-live="polite"><li>Proxy events will appear here.</li></ol>
+                    </details>
+                </main>
+            </div>
+        {% endwith %}
+    </div>
+    <dialog class="proxy-edit-dialog" id="request-edit-dialog" aria-labelledby="request-edit-title">
+        <form method="dialog" id="request-edit-form">
+            <div class="proxy-panel-heading"><div><p>INTERCEPTED REQUEST</p><h2 id="request-edit-title">Edit before forwarding</h2></div><button class="proxy-icon-button" value="cancel" aria-label="Close editor">×</button></div>
+            <p class="proxy-scope-notice">Only the original destination origin may be forwarded. Modified traffic is marked before it is sent.</p>
+            <label>Method<input id="edit-method" type="text" maxlength="32"></label>
+            <label>URL<input id="edit-url" type="url" maxlength="4096"></label>
+            <label>Headers (JSON)<textarea id="edit-headers" rows="8" spellcheck="false"></textarea></label>
+            <label>Body<textarea id="edit-body" rows="8" spellcheck="false"></textarea></label>
+            <p id="edit-error" class="proxy-error" role="alert" hidden></p>
+            <div class="proxy-dialog-actions"><span class="proxy-modified-flag" id="edit-modified-state" hidden>MODIFIED</span><button class="proxy-button proxy-button-secondary" value="cancel">Cancel</button><button class="proxy-button proxy-button-primary" id="forward-modified" value="default">Forward Request</button></div>
+        </form>
+    </dialog>
+    {% include "_ai_drawer.html" %}
+</body>
+</html>

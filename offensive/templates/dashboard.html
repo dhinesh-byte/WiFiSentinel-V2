@@ -5,62 +5,28 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	{% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
 	<meta name="theme-color" content="#f4f7f3">
-	<title>WiFi Sentinel | Network Assessment</title>
+	<title>VulnScan v4.13 | Offensive Security Assessment</title>
 	<link rel="icon" href="data:,">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+	<link rel="stylesheet" href="/static/css/tokens.css">
+	<link rel="stylesheet" href="/static/css/app.css">
+	<link rel="stylesheet" href="/static/css/modes.css">
+	<link rel="stylesheet" href="/offensive/static/css/dashboard.css">
+	<link rel="stylesheet" href="/static/css/ai.css">
+	<link rel="stylesheet" href="/static/css/shared-shell.css">
+	<script src="/static/js/nmap-console.js" defer></script>
 	<script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+	<script src="/static/js/ai-chat.js" defer></script>
 </head>
-<body>
-	<header class="topbar">
-		<a class="brand" href="/" aria-label="WiFi Sentinel home">
-			<span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-			<span class="brand-name">WiFi <b>Sentinel</b></span>
-			<span class="brand-version">V2.0</span>
-		</a>
-		<div class="topbar-meta">
-			<span class="live-dot" aria-hidden="true"></span>
-			<span>Local assessment console</span>
-			<span class="topbar-divider" aria-hidden="true"></span>
-			<span class="topbar-mode">AUTHORIZED USE</span>
-			<nav class="product-nav" aria-label="Product navigation">
-				<a href="/">Overview</a>
-				<a href="/history">History</a>
-				<a href="/defensive">Defensive</a>
-				<a class="is-current" href="/offensive/" aria-current="page">Offensive</a>
-			</nav>
-			{% if auth_enabled %}
-			<form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
-				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-				<button type="submit">Sign out</button>
-			</form>
-			{% endif %}
-		</div>
-	</header>
-
-	<div class="app-layout">
-		<aside class="sidebar" aria-label="Dashboard navigation">
-			<p class="sidebar-caption">WORKSPACE</p>
-			<nav class="side-nav">
-				<a class="nav-link is-active" href="#overview"><span class="nav-marker">01</span>Overview</a>
-				<a class="nav-link" href="#hosts"><span class="nav-marker">02</span>Hosts</a>
-				<a class="nav-link" href="#services"><span class="nav-marker">03</span>Services</a>
-				<a class="nav-link" href="#web-tls"><span class="nav-marker">04</span>Web / TLS</a>
-				<a class="nav-link" href="#cve"><span class="nav-marker">05</span>CVE review</a>
-				<a class="nav-link" href="#segmentation"><span class="nav-marker">06</span>Shared services</a>
-				<a class="nav-link" href="#attack-paths"><span class="nav-marker">07</span>Attack map</a>
-				<a class="nav-link" href="#findings"><span class="nav-marker">08</span>Findings</a>
-				<a class="nav-link" href="#notes"><span class="nav-marker">09</span>Limitations</a>
-			</nav>
-			<div class="sidebar-foot">
-				<span class="sidebar-rule"></span>
-				<p>WI-FI SECURITY<br>ASSESSMENT</p>
-				<span class="sidebar-foot-meta">LOCAL CONSOLE / 01</span>
-			</div>
-		</aside>
-
+	<body data-mode="offensive">
+	<div class="app-shell">
+		{% with active_mode='offensive' %}
+			{% include "_app_sidebar.html" %}
+			<div class="app-main">
+				{% include "_app_topbar.html" %}
+		{% endwith %}
 		<main class="main-content" id="overview">
 			<section class="page-heading">
 				<div>
@@ -77,51 +43,398 @@
 			<section class="scan-console" id="scan" aria-labelledby="scan-title">
 				<div class="console-heading">
 					<div class="console-title-group">
-						<p class="section-index">01 <span>/</span> AUTHORIZED DISCOVERY</p>
-						<h2 id="scan-title">Start a network scan</h2>
+						<p class="section-index">01 <span>/</span> AUTHORIZED TARGET</p>
+						<h2 id="scan-title">Network assessment target</h2>
 					</div>
-					<p class="console-boundary">IPv4 host or network up to /24</p>
+					<p class="console-boundary">Explicitly authorized IPv4 scope</p>
 				</div>
 				<form class="scan-form" id="scan-form">
-					<div class="target-control">
-						<label for="target-input">Target</label>
-						<div class="target-input-wrap">
-							<input id="target-input" name="target" type="text" inputmode="decimal" placeholder="192.168.1.0/24" autocomplete="off" spellcheck="false" required>
-							<span class="input-kind">IPv4</span>
+					<div class="target-workspace">
+						<div class="target-control">
+							<div class="target-label-line">
+								<label for="target-input">Target</label>
+								<details class="setting-info">
+									<summary aria-label="About target scope" aria-describedby="target-help">ⓘ</summary>
+									<span class="setting-tooltip" id="target-help" role="tooltip">Enter an authorized IPv4 host or network, such as 10.160.135.51/24.</span>
+								</details>
+							</div>
+							<div class="target-input-wrap" id="target-input-wrap">
+								<input id="target-input" name="target" type="text" inputmode="decimal" placeholder="10.160.135.51/24" autocomplete="off" spellcheck="false" required aria-describedby="target-description">
+								<span class="target-validity" id="target-validity" aria-live="polite">AWAITING TARGET</span>
+							</div>
+							<p class="target-description" id="target-description">Enter an authorized IPv4 host, CIDR network, or approved assessment target.</p>
+						</div>
+						<dl class="target-intelligence" aria-label="Target details">
+							<div><dt>Target type</dt><dd id="target-type">Pending</dd></div>
+							<div><dt>Scope</dt><dd id="target-scope">Authorization required</dd></div>
+							<div><dt>Resolution</dt><dd id="target-resolution">Pending</dd></div>
+						</dl>
+						<div class="target-actions">
+							<div class="authorization-setting">
+								<label class="authorization-control" for="authorization-check">
+									<input id="authorization-check" type="checkbox" required>
+									<span class="custom-check" aria-hidden="true"></span>
+									<span>I am authorized to assess this network</span>
+								</label>
+								<details class="setting-info">
+									<summary aria-label="About authorization scope" aria-describedby="authorization-help">ⓘ</summary>
+									<span class="setting-tooltip" id="authorization-help" role="tooltip">Confirms that this target is within your authorized security-assessment scope.</span>
+								</details>
+							</div>
+							<div class="target-action-buttons">
+								<button class="scan-button" id="start-scan" type="submit" disabled>
+									<span>Start assessment</span><span class="button-arrow" aria-hidden="true">&#8594;</span>
+								</button>
+								<button class="button button-secondary" id="cancel-scan" type="button" hidden>Cancel scan</button>
+							</div>
 						</div>
 					</div>
 					<fieldset class="scan-options">
-						<legend>OPTIONAL CHECKS</legend>
-						<label class="option-control" for="include-web">
-							<input id="include-web" type="checkbox" checked>
-							<span class="option-check" aria-hidden="true"></span>
-							<span>Web / TLS</span>
-						</label>
-						<label class="option-control" for="include-udp">
-							<input id="include-udp" type="checkbox">
-							<span class="option-check" aria-hidden="true"></span>
-							<span>Selected UDP ports</span>
-						</label>
+						<legend>02 / ASSESSMENT CONFIGURATION</legend>
+						<div class="setting-control">
+							<div class="setting-control-heading">
+								<label for="scan-profile">Scan profile</label>
+								<details class="setting-info">
+									<summary aria-label="About scan profile" aria-describedby="profile-help">ⓘ</summary>
+									<span class="setting-tooltip" id="profile-help" role="tooltip">Selects the overall assessment depth and enabled checks.</span>
+								</details>
+							</div>
+							<select id="scan-profile" name="profile">
+								<option value="quick">Quick</option>
+								<option value="standard" selected>Standard</option>
+								<option value="deep">Deep</option>
+								<option value="custom">Custom</option>
+							</select>
+						</div>
+						<div class="setting-control">
+							<div class="setting-control-heading">
+								<label for="scan-method">TCP method</label>
+								<details class="setting-info">
+									<summary aria-label="About TCP method" aria-describedby="tcp-method-help">ⓘ</summary>
+									<span class="setting-tooltip" id="tcp-method-help" role="tooltip">Chooses how TCP ports are tested. TCP Connect performs a complete TCP connection.</span>
+								</details>
+							</div>
+							<select id="scan-method" name="scan_method">
+								<option value="connect" selected>TCP Connect</option>
+								<option value="syn">TCP SYN</option>
+							</select>
+						</div>
+						<div class="setting-control custom-ports-control" id="custom-ports-control" hidden>
+							<div class="setting-control-heading">
+								<label for="custom-ports">Custom TCP ports</label>
+								<details class="setting-info">
+									<summary aria-label="About custom TCP ports" aria-describedby="custom-ports-help">ⓘ</summary>
+									<span class="setting-tooltip" id="custom-ports-help" role="tooltip">Enter specific TCP ports to assess, e.g. 22,80,443,8080.</span>
+								</details>
+							</div>
+							<input id="custom-ports" type="text" inputmode="numeric" placeholder="22,80,8000-8100" autocomplete="off" spellcheck="false">
+						</div>
+						<div class="option-setting">
+							<div class="option-setting-heading">
+								<label class="option-control" for="include-web">
+									<input id="include-web" type="checkbox" checked>
+									<span class="option-check" aria-hidden="true"></span>
+									<span>Web / TLS</span>
+								</label>
+								<details class="setting-info">
+									<summary aria-label="About Web and TLS checks" aria-describedby="web-help">ⓘ</summary>
+									<span class="setting-tooltip" id="web-help" role="tooltip">Detects HTTP/HTTPS services and checks web and TLS security information.</span>
+								</details>
+							</div>
+						</div>
+						<div class="option-setting">
+							<div class="option-setting-heading">
+								<label class="option-control" for="include-udp">
+									<input id="include-udp" type="checkbox">
+									<span class="option-check" aria-hidden="true"></span>
+									<span>Selected UDP ports</span>
+								</label>
+								<details class="setting-info">
+									<summary aria-label="About selected UDP ports" aria-describedby="udp-help">ⓘ</summary>
+									<span class="setting-tooltip" id="udp-help" role="tooltip">Tests the UDP ports you specify. UDP assessment may take longer than TCP.</span>
+								</details>
+							</div>
+							<span class="setting-impact" id="udp-duration-impact" hidden>May increase scan duration</span>
+						</div>
+						<div class="option-setting">
+							<div class="option-setting-heading">
+								<label class="option-control" for="include-smb">
+									<input id="include-smb" type="checkbox" checked>
+									<span class="option-check" aria-hidden="true"></span>
+									<span>SMB protocol checks</span>
+								</label>
+								<details class="setting-info">
+									<summary aria-label="About SMB protocol checks" aria-describedby="smb-help">ⓘ</summary>
+									<span class="setting-tooltip" id="smb-help" role="tooltip">Collects SMB service information and performs supported read-only security checks.</span>
+								</details>
+							</div>
+						</div>
+						<div class="option-setting">
+							<div class="option-setting-heading">
+								<label class="option-control" for="include-dns">
+									<input id="include-dns" type="checkbox" checked>
+									<span class="option-check" aria-hidden="true"></span>
+									<span>DNS NSID check</span>
+								</label>
+								<details class="setting-info">
+									<summary aria-label="About DNS NSID check" aria-describedby="dns-help">ⓘ</summary>
+									<span class="setting-tooltip" id="dns-help" role="tooltip">Checks whether a DNS service exposes server identification information.</span>
+								</details>
+							</div>
+						</div>
+						<div class="option-setting">
+							<div class="option-setting-heading">
+								<label class="option-control" for="include-tls">
+									<input id="include-tls" type="checkbox" checked>
+									<span class="option-check" aria-hidden="true"></span>
+									<span>TLS certificate check</span>
+								</label>
+								<details class="setting-info">
+									<summary aria-label="About TLS certificate check" aria-describedby="tls-help">ⓘ</summary>
+									<span class="setting-tooltip" id="tls-help" role="tooltip">Examines TLS certificates, validity, and certificate-related security observations.</span>
+								</details>
+							</div>
+						</div>
+						<div class="option-setting">
+							<div class="option-setting-heading">
+								<label class="option-control" for="include-database">
+									<input id="include-database" type="checkbox">
+									<span class="option-check" aria-hidden="true"></span>
+									<span>Oracle listener version</span>
+								</label>
+								<details class="setting-info">
+									<summary aria-label="About Oracle listener version" aria-describedby="oracle-help">ⓘ</summary>
+									<span class="setting-tooltip" id="oracle-help" role="tooltip">Attempts to identify the version of an exposed Oracle listener.</span>
+								</details>
+							</div>
+						</div>
 					</fieldset>
-					<label class="authorization-control" for="authorization-check">
-						<input id="authorization-check" type="checkbox" required>
-						<span class="custom-check" aria-hidden="true"></span>
-						<span>I am authorized to assess this network</span>
-					</label>
-					<button class="scan-button" id="start-scan" type="submit" disabled>
-						<span>Start authorized scan</span><span class="button-arrow" aria-hidden="true">&#8594;</span>
-					</button>
+					<div class="scan-profile-cards" role="group" aria-label="Scan profile presets">
+						<button class="scan-profile-card is-selected" type="button" data-profile-choice="standard">
+							<strong>Standard</strong><span>Ports + services</span><small>Depth: balanced · Complexity: moderate</small>
+						</button>
+						<button class="scan-profile-card" type="button" data-profile-choice="quick">
+							<strong>Quick</strong><span>Fast basic discovery</span><small>Depth: essential · Complexity: low</small>
+						</button>
+						<button class="scan-profile-card" type="button" data-profile-choice="deep">
+							<strong>Deep</strong><span>Detailed ports + selected UDP</span><small>Depth: detailed · Complexity: high</small>
+						</button>
+						{% if is_admin %}
+						<button class="scan-profile-card" type="button" data-admin-profile-choice="vulnerability">
+							<strong>Vulnerability</strong><span>Selected security / NSE checks</span><small>Depth: targeted · Complexity: high</small>
+						</button>
+						<button class="scan-profile-card" type="button" data-admin-profile-choice="full">
+							<strong>Full authorized</strong><span>Comprehensive authorized assessment</span><small>Depth: comprehensive · Complexity: highest</small>
+						</button>
+						{% endif %}
+						<button class="scan-profile-card" type="button" data-profile-choice="custom">
+							<strong>Custom</strong><span>User-selected supported components</span><small>Depth: configurable · Complexity: varies</small>
+						</button>
+					</div>
+					{% if is_admin %}
+					<details class="admin-nmap-panel" id="admin-nmap-options">
+						<summary><span>Advanced Nmap options</span><span class="admin-nmap-badge">ADMIN</span></summary>
+						<label class="admin-nmap-enable"><input id="admin-nmap-enabled" type="checkbox"> Apply these options to this scan</label>
+						<p class="admin-nmap-help">Advanced settings are off by default. Enable them to customize discovery, port scans, performance, and output for this assessment.</p>
+						<fieldset class="admin-nmap-fields" id="admin-nmap-fields" disabled>
+							<legend>Advanced scan settings</legend>
+							<div class="admin-nmap-grid">
+								<label>Assessment profile
+									<select id="admin-nmap-profile">
+										<option value="standard">Standard</option>
+										<option value="quick">Quick scan</option>
+										<option value="deep">Deep assessment</option>
+										<option value="vulnerability">Vulnerability assessment</option>
+										<option value="full">Full authorized assessment</option>
+										<option value="custom" selected>Custom</option>
+									</select>
+								</label>
+							</div>
+							<div class="admin-nmap-grid">
+								<label>Host discovery
+									<select id="admin-discovery-method">
+										<option value="default">Default discovery</option>
+										<option value="arp">ARP discovery</option>
+										<option value="icmp">ICMP echo</option>
+										<option value="tcp-syn">TCP SYN probes</option>
+										<option value="tcp-ack">TCP ACK probes</option>
+										<option value="udp">UDP discovery</option>
+										<option value="none">Skip discovery (single host only)</option>
+									</select>
+								</label>
+								<label>Scan technique
+									<select id="admin-scan-type">
+										<option value="connect">TCP Connect</option>
+										<option value="syn">TCP SYN</option>
+										<option value="udp">UDP</option>
+										<option value="ack">TCP ACK</option>
+										<option value="window">TCP Window</option>
+										<option value="fin">TCP FIN</option>
+										<option value="null">TCP NULL</option>
+										<option value="xmas">TCP Xmas</option>
+										<option value="maimon">TCP Maimon</option>
+										<option value="sctp-init">SCTP INIT</option>
+										<option value="sctp-cookie">SCTP COOKIE ECHO</option>
+										<option value="ip-protocol">IP protocol</option>
+									</select>
+								</label>
+								<label>Port selection
+									<select id="admin-nmap-port-preset">
+										<option value="profile">Profile defaults</option>
+										<option value="top-100">Top 100</option>
+										<option value="top-1000">Top 1,000</option>
+										<option value="custom">Custom ports / protocols</option>
+										<option value="all">All ports / protocols</option>
+									</select>
+								</label>
+								<label id="admin-nmap-ports-label" hidden>Ports / protocol numbers
+									<input id="admin-nmap-ports" type="text" inputmode="numeric" placeholder="22,80,8000-8100" autocomplete="off" spellcheck="false">
+								</label>
+								<label>Exclude ports
+									<input id="admin-nmap-exclude-ports" type="text" inputmode="numeric" placeholder="25,135-139" autocomplete="off" spellcheck="false">
+								</label>
+								<label>Timing template
+									<select id="admin-nmap-timing"><option>T2</option><option selected>T3</option><option>T4</option></select>
+								</label>
+								<label>Maximum probe rate
+									<select id="admin-nmap-max-rate">
+										<option value="0" selected>Automatic</option>
+										<option value="5">5 packets / second</option>
+										<option value="10">10 packets / second</option>
+										<option value="20">20 packets / second</option>
+										<option value="50">50 packets / second</option>
+									</select>
+								</label>
+								<label>Minimum probe delay
+									<select id="admin-nmap-scan-delay">
+										<option value="0" selected>Automatic</option>
+										<option value="10">10 ms</option>
+										<option value="25">25 ms</option>
+										<option value="50">50 ms</option>
+										<option value="100">100 ms</option>
+										<option value="250">250 ms</option>
+									</select>
+								</label>
+								<label>Maximum retries
+									<select id="admin-nmap-retries"><option>0</option><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select>
+								</label>
+								<label>Host timeout
+									<select id="admin-nmap-timeout"><option value="30">30 seconds</option><option value="60">60 seconds</option><option selected value="90">90 seconds</option><option value="120">120 seconds</option><option value="180">180 seconds</option><option value="300">300 seconds</option></select>
+								</label>
+								<label>Parallel hosts
+									<select id="admin-nmap-parallelism"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+								</label>
+							</div>
+							<div class="admin-nmap-checks">
+								<label><input id="admin-nmap-udp" type="checkbox"> Supplementary UDP assessment</label>
+								<label><input id="admin-nmap-service" type="checkbox" checked> Service / version detection (-sV)</label>
+								<label><input id="admin-nmap-os" type="checkbox"> OS fingerprinting (-O)</label>
+								<label><input id="admin-nmap-traceroute" type="checkbox"> Network traceroute</label>
+								<label><input id="admin-nmap-packet-trace" type="checkbox"> Packet trace</label>
+								<label><input id="admin-nmap-reason" type="checkbox" checked> Port state reasons</label>
+								<label><input id="admin-nmap-ipv6" type="checkbox"> IPv6 target</label>
+								<label><input id="admin-nmap-smb" type="checkbox"> SMB enumeration NSE checks</label>
+								<label><input id="admin-nmap-dns" type="checkbox"> DNS NSE checks</label>
+								<label><input id="admin-nmap-tls" type="checkbox"> TLS certificate / cipher NSE checks</label>
+								<label><input id="admin-nmap-web" type="checkbox"> Web enumeration NSE checks</label>
+								<label><input id="admin-nmap-vulnerability" type="checkbox"> Selected vulnerability indicator NSE checks</label>
+							</div>
+							<label class="admin-nmap-output">Report output
+								<select id="admin-nmap-output"><option value="json">JSON report</option><option value="both">JSON report + Nmap XML export</option></select>
+							</label>
+							<label class="admin-nmap-advanced-authorized"><input id="admin-nmap-advanced-authorized" type="checkbox"> I confirm this advanced assessment is explicitly authorized and within scope</label>
+						</fieldset>
+						<p class="admin-nmap-note">Raw packet modes, OS fingerprinting, and traceroute require VulnScan itself to run with OS-level administrator privileges. XML powers parsing; select XML export to retain combined Nmap XML. NSE scripts are explicitly allow-listed; vulnerability checks may generate additional target traffic.</p>
+					</details>
+					{% endif %}
+					<p class="safe-check-note">Authorized, read-only scripts only. No credential attempts, exploit-category scripts, or database contents.</p>
 				</form>
 				<div class="scan-feedback" aria-live="polite">
 					<div class="scan-pulse" id="scan-pulse" aria-hidden="true"><span></span><span></span><span></span></div>
 					<div class="feedback-copy">
 						<div class="feedback-topline"><span id="scan-status">PENDING</span><span class="feedback-separator">/</span><span id="scan-stage">AWAITING TARGET</span></div>
 						<p id="scan-message">No assessment has been run in this session.</p>
+						<div class="offensive-progress-track" role="progressbar" aria-label="Scan progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+							<div id="offensive-progress" class="offensive-progress-bar" data-progress="0"></div>
+						</div>
+						<p class="scan-elapsed" id="offensive-elapsed">Elapsed: 0.0 s</p>
+						<p class="scan-elapsed" id="nmap-progress" aria-live="polite">No Nmap timing update yet.</p>
 					</div>
 					<a class="report-link" id="report-link" href="#" hidden download>Download report JSON</a>
+					<a class="report-link" id="nmap-xml-link" href="#" hidden download>Download Nmap XML</a>
+					<details class="nmap-packet-trace" id="nmap-packet-trace-details" hidden>
+						<summary>Packet trace output</summary>
+						<pre id="nmap-packet-trace"></pre>
+					</details>
 				</div>
 				<p class="form-error" id="form-error" role="alert" hidden></p>
 			</section>
+
+			<section class="nmap-workspace" aria-labelledby="nmap-workspace-title">
+				<div class="section-heading nmap-workspace-heading">
+					<div><p class="section-index">03 <span>/</span> NMAP WORKSPACE</p><h2 id="nmap-workspace-title">Process activity</h2></div>
+				</div>
+				<div class="nmap-live-panels" aria-label="Nmap technical console">
+				<section class="nmap-console-panel nmap-command-panel" id="nmap-command-details" aria-labelledby="nmap-command-title">
+					<header class="nmap-command-header">
+						<div><h3 id="nmap-command-title">NMAP COMMANDS</h3><span class="console-indicator">ACTUAL INVOCATION</span></div>
+					</header>
+					<pre id="nmap-command-output">No Nmap command has been executed in this session.</pre>
+					<button id="nmap-copy-command" class="subtle-button" type="button" disabled>Copy command</button>
+				</section>
+				<section class="nmap-live-console nmap-console-panel" aria-labelledby="nmap-live-console-title">
+					<header class="nmap-live-console-header">
+						<div class="nmap-live-console-heading">
+							<h3 id="nmap-live-console-title">NMAP LIVE CONSOLE</h3>
+							<span id="nmap-terminal-state" class="nmap-live-state" data-state="awaiting-process">AWAITING PROCESS</span>
+							<small>Nmap <span id="nmap-terminal-version">Checking version…</span></small>
+						</div>
+						<div class="nmap-live-console-controls">
+							<span class="nmap-output-count" id="nmap-output-count">Lines: 0</span>
+							<button id="nmap-copy-output" class="subtle-button" type="button">Copy</button>
+							<button id="nmap-clear-output" class="subtle-button" type="button">Clear</button>
+							<label><input id="nmap-auto-scroll" type="checkbox" checked> Auto-scroll</label>
+						</div>
+					</header>
+					<div id="nmap-terminal-commands" class="nmap-terminal-commands" aria-live="polite"></div>
+					<div id="nmap-terminal-shell" class="nmap-terminal-shell" role="region" aria-label="Live Nmap subprocess output">
+						<pre id="nmap-terminal-output" class="nmap-terminal-output" role="log" aria-live="polite" aria-relevant="additions text"></pre>
+						<button id="nmap-jump-latest" class="nmap-jump-latest" type="button" hidden>Jump to latest</button>
+					</div>
+					<p id="nmap-terminal-notice" class="nmap-terminal-notice" role="status" hidden></p>
+				</section>
+				<details class="nmap-console-panel" id="nmap-terminal-details">
+					<summary><span>VulnScan events</span><span class="console-indicator" id="nmap-events-state">ASSESSMENT EVENTS</span></summary>
+					<ol id="nmap-terminal-events" class="nmap-terminal-output" aria-live="polite">
+						<li>No assessment events have been reported for this scan.</li>
+					</ol>
+				</details>
+				<details class="nmap-console-panel">
+					<summary>Scan diagnostics</summary>
+					<dl class="nmap-evidence-grid">
+						<div><dt>Nmap engine</dt><dd id="diagnostic-engine">Checking</dd></div>
+						<div><dt>Nmap version</dt><dd id="diagnostic-version">Unavailable</dd></div>
+						<div><dt>Target</dt><dd id="diagnostic-target">Unavailable</dd></div>
+						<div><dt>Profile</dt><dd id="diagnostic-profile">Not selected</dd></div>
+						<div><dt>Privileges</dt><dd id="diagnostic-privileges">Unavailable</dd></div>
+						<div><dt>Interface</dt><dd id="diagnostic-interface">Unavailable</dd></div>
+						<div><dt>Start time</dt><dd id="diagnostic-start">Not started</dd></div>
+						<div><dt>Elapsed</dt><dd id="diagnostic-duration">Unavailable</dd></div>
+						<div><dt>Exit status</dt><dd id="diagnostic-exit-status">Not started</dd></div>
+						<div class="details-wide"><dt>Warnings</dt><dd id="diagnostic-warnings">None reported</dd></div>
+						<div class="details-wide"><dt>Skipped features</dt><dd id="diagnostic-skipped">None reported</dd></div>
+					</dl>
+				</details>
+				</div>
+			</section>
+
+			<div class="results-workspace-heading">
+				<div><p class="section-index">04 <span>/</span> ASSESSMENT RESULTS</p><h2>Findings and evidence</h2></div>
+			</div>
+			<div class="results-view-switch" role="group" aria-label="Assessment results view">
+				<button type="button" data-results-view="vulnscan" aria-pressed="true">VulnScan view</button>
+				<button type="button" data-results-view="nmap" aria-pressed="false">Nmap view</button>
+			</div>
 
 			<section class="metrics-grid" aria-label="Assessment statistics">
 				<article class="metric metric-primary">
@@ -144,7 +457,22 @@
 					<strong id="metric-services">--</strong>
 					<span class="metric-note">Service labels returned</span>
 				</article>
-				<article class="metric metric-findings">
+				<article class="metric">
+					<span class="metric-label">VERSIONS IDENTIFIED</span>
+					<strong id="metric-versions">--</strong>
+					<span class="metric-note">Version probes</span>
+				</article>
+				<article class="metric">
+					<span class="metric-label">WEB SERVICES</span>
+					<strong id="metric-web">--</strong>
+					<span class="metric-note">HTTP observations</span>
+				</article>
+				<article class="metric">
+					<span class="metric-label">TLS SERVICES</span>
+					<strong id="metric-tls">--</strong>
+					<span class="metric-note">Verified handshakes</span>
+				</article>
+				<article class="metric metric-findings" data-results-panel="interpretation">
 					<span class="metric-label">FINDINGS</span>
 					<strong id="metric-findings">--</strong>
 					<span class="metric-note">Assessment evidence</span>
@@ -154,10 +482,15 @@
 					<strong id="metric-udp">--</strong>
 					<span class="metric-note">Selected profile</span>
 				</article>
-				<article class="metric metric-cve">
+				<article class="metric metric-cve" data-results-panel="interpretation">
 					<span class="metric-label">CVE MATCHES</span>
 					<strong id="metric-cve">--</strong>
 					<span class="metric-note">Exact local CPE</span>
+				</article>
+				<article class="metric metric-orange" data-results-panel="interpretation">
+					<span class="metric-label">RISK INDICATORS</span>
+					<strong id="metric-risk">--</strong>
+					<span class="metric-note">Medium severity and above</span>
 				</article>
 			</section>
 
@@ -171,8 +504,8 @@
 				</div>
 				<div class="table-wrap">
 					<table>
-						<thead><tr><th>Target</th><th>Hostname</th><th>Enumeration</th><th>Open ports</th><th>Services identified</th></tr></thead>
-						<tbody id="hosts-table-body"><tr class="empty-row"><td colspan="5">Host details will appear after a scan.</td></tr></tbody>
+						<thead><tr><th>IP / IPv6</th><th>Hostname</th><th>MAC / vendor</th><th>Device / OS</th><th>Discovery evidence</th><th>Enumeration</th><th>Open ports</th><th>Services</th><th>AI</th></tr></thead>
+						<tbody id="hosts-table-body"><tr class="empty-row"><td colspan="8">Host details will appear after a scan.</td></tr></tbody>
 					</table>
 				</div>
 				<p class="udp-uncertainty" id="udp-uncertainty" hidden></p>
@@ -188,13 +521,14 @@
 				</div>
 				<div class="table-wrap">
 					<table>
-						<thead><tr><th>Target</th><th>Port</th><th>Service</th><th>Product</th><th>Version</th></tr></thead>
-						<tbody id="services-table-body"><tr class="empty-row"><td colspan="5">No service data collected.</td></tr></tbody>
+						<thead><tr><th>Target</th><th>Port / protocol</th><th>Service</th><th>Product</th><th>Version</th><th>CPE</th><th>Evidence</th></tr></thead>
+						<tbody id="services-table-body"><tr class="empty-row"><td colspan="7">No service data collected.</td></tr></tbody>
 					</table>
 				</div>
+				<p class="udp-uncertainty" id="port-state-summary" hidden></p>
 			</section>
 
-			<section class="results-section" id="web-tls" aria-labelledby="web-title">
+			<section class="results-section" id="web-tls" data-results-panel="interpretation" aria-labelledby="web-title">
 				<div class="section-heading">
 					<div>
 						<p class="section-index">04 <span>/</span> HTTP + TLS</p>
@@ -210,7 +544,7 @@
 				</div>
 			</section>
 
-			<section class="results-section" id="cve" aria-labelledby="cve-title">
+			<section class="results-section" id="cve" data-results-panel="interpretation" aria-labelledby="cve-title">
 				<div class="section-heading">
 					<div>
 						<p class="section-index">05 <span>/</span> OFFLINE INTELLIGENCE</p>
@@ -227,7 +561,7 @@
 				</div>
 			</section>
 
-			<section class="results-section" id="segmentation" aria-labelledby="segmentation-title">
+			<section class="results-section" id="segmentation" data-results-panel="interpretation" aria-labelledby="segmentation-title">
 				<div class="section-heading">
 					<div>
 						<p class="section-index">06 <span>/</span> CROSS-HOST REVIEW</p>
@@ -244,7 +578,7 @@
 				</div>
 			</section>
 
-			<section class="results-section" id="attack-paths" aria-labelledby="attack-paths-title">
+			<section class="results-section" id="attack-paths" data-results-panel="interpretation" aria-labelledby="attack-paths-title">
 				<div class="section-heading">
 					<div>
 						<p class="section-index">07 <span>/</span> OBSERVED ATTACK SURFACE</p>
@@ -262,7 +596,7 @@
 				</div>
 			</section>
 
-			<section class="results-section findings-section" id="findings" aria-labelledby="findings-title">
+			<section class="results-section findings-section" id="findings" data-results-panel="interpretation" aria-labelledby="findings-title">
 				<div class="section-heading">
 					<div>
 						<p class="section-index">08 <span>/</span> ASSESSMENT</p>
@@ -279,7 +613,7 @@
 				</div>
 			</section>
 
-			<section class="notes-grid" id="notes">
+			<section class="notes-grid" id="notes" data-results-panel="interpretation">
 				<div class="notes-panel">
 					  <p class="section-index">09 <span>/</span> SCOPE NOTES</p>
 					<h2>Assessment limitations</h2>
@@ -292,11 +626,114 @@
 				</div>
 			</section>
 
+			<dialog class="nmap-evidence-drawer" id="nmap-evidence-drawer" aria-labelledby="nmap-evidence-title">
+				<div class="evidence-drawer-heading">
+					<div><p class="section-index">SCAN EVIDENCE</p><h2 id="nmap-evidence-title">Evidence details</h2></div>
+					<button type="button" id="nmap-evidence-close" class="subtle-button">Close</button>
+				</div>
+				<dl id="nmap-evidence-content" class="nmap-evidence-grid"></dl>
+			</dialog>
+
+			<dialog class="vulnerability-guidance-dialog" id="vulnerability-guidance-dialog" aria-labelledby="vulnerability-guidance-title">
+				<header class="guidance-dialog-header">
+					<div><p class="section-index">AUTHORIZED LEARNING WORKSPACE</p><h2 id="vulnerability-guidance-title">Vulnerability guidance</h2></div>
+					<button type="button" id="vulnerability-guidance-close" class="subtle-button">Close</button>
+				</header>
+				<div class="guidance-finding-card">
+					<div class="guidance-finding-heading">
+						<div><span class="guidance-eyebrow">VULNERABILITY / INDICATOR</span><h3 id="guidance-finding-name">Finding</h3></div>
+						<div class="guidance-status-stack">
+							<span id="guidance-vulnerability-status" class="vulnerability-status">Not classified</span>
+							<span id="guidance-validation-state" class="guidance-status-pill">NOT VALIDATED</span>
+						</div>
+					</div>
+					<dl id="guidance-finding-facts" class="nmap-evidence-grid"></dl>
+				</div>
+				<section class="guidance-authorization" id="guidance-authorization">
+					<p class="guidance-eyebrow">AUTHORIZED LAB / CTF TARGET</p>
+					<p>Detailed, non-destructive learning guidance is available only after you confirm this target is an authorized lab, CTF, sandbox, or system you are permitted to assess.</p>
+					<strong>Target: <span id="guidance-authorization-target">Unavailable</span></strong>
+					<label class="guidance-confirm-label"><input id="guidance-authorization-check" type="checkbox"> I confirm that I am authorized to test this target.</label>
+					<button class="button button-primary" id="guidance-authorization-confirm" type="button" disabled>I CONFIRM AUTHORIZATION</button>
+					<p class="guidance-error" id="guidance-authorization-error" role="alert" hidden></p>
+				</section>
+				<div id="guidance-detail-panel" hidden>
+					<div class="guidance-detail-heading">
+						<div><p class="guidance-eyebrow">EXPLOITATION / VALIDATION GUIDE</p><h3>Understand, validate, and remediate safely</h3></div>
+						<label class="learning-mode-control"><input id="guidance-learning-mode" type="checkbox"> LEARNING MODE</label>
+					</div>
+					<ol class="guidance-timeline" id="guidance-timeline" aria-label="Vulnerability workflow"></ol>
+					<details class="guidance-section" open>
+						<summary>SECTION 1 — UNDERSTAND THE VULNERABILITY</summary>
+						<div class="guidance-section-body" id="guidance-understand"></div>
+					</details>
+					<details class="guidance-section">
+						<summary>LAB SETUP</summary>
+						<div class="guidance-section-body" id="guidance-lab-setup"></div>
+					</details>
+					<details class="guidance-section" open>
+						<summary>NON-DESTRUCTIVE VALIDATION</summary>
+						<div class="guidance-section-body" id="guidance-validation-steps"></div>
+					</details>
+					<details class="guidance-section">
+						<summary>EXPLOITATION CONCEPT — CONCEPTUAL ONLY</summary>
+						<div class="guidance-section-body" id="guidance-concept"></div>
+					</details>
+					<details class="guidance-section">
+						<summary>EXPECTED RESULT &amp; INTERPRETATION</summary>
+						<div class="guidance-section-body" id="guidance-expected"></div>
+					</details>
+					<section class="guidance-section guidance-evidence-section">
+						<h4>EVIDENCE</h4>
+						<dl id="guidance-evidence-facts" class="nmap-evidence-grid"></dl>
+						<div class="guidance-user-observation">
+							<label for="guidance-observation">Your observed result / validation evidence</label>
+							<textarea id="guidance-observation" rows="3" maxlength="2000" placeholder="Record what you observed in the authorized lab. VulnScan does not verify this observation."></textarea>
+							<div class="guidance-record-controls">
+								<label for="guidance-result-state">User-recorded state</label>
+								<select id="guidance-result-state">
+									<option>NOT VALIDATED</option>
+									<option>POTENTIALLY VULNERABLE</option>
+									<option>VALIDATED</option>
+									<option>NOT VULNERABLE</option>
+									<option>INCONCLUSIVE</option>
+									<option>REMEDIATED</option>
+									<option>VERIFIED</option>
+								</select>
+								<button type="button" class="button button-secondary" id="guidance-add-report">ADD TO REPORT</button>
+								<button type="button" class="subtle-button" id="guidance-copy-evidence">COPY EVIDENCE</button>
+							</div>
+							<p class="guidance-disclaimer" id="guidance-record-message">Assessment states are user-recorded and are not independently verified by VulnScan.</p>
+						</div>
+					</section>
+					<details class="guidance-section" open>
+						<summary>IMPACT</summary>
+						<div class="guidance-section-body" id="guidance-impact"></div>
+					</details>
+					<details class="guidance-section" open>
+						<summary>HOW TO FIX IT &amp; VERIFY THE FIX</summary>
+						<div class="guidance-section-body" id="guidance-remediation"></div>
+					</details>
+					<section class="guidance-ai-panel">
+						<div><p class="guidance-eyebrow">OLLAMA AI ASSISTANT</p><h4>Ask about this finding</h4><p>Answers use this finding's scanner evidence and your current authorization state.</p></div>
+						<div class="guidance-ai-actions">
+							<button type="button" data-guidance-ai-question="Explain this vulnerability using the selected finding's evidence.">Explain this vulnerability</button>
+							<button type="button" data-guidance-ai-question="Why might the observed version be affected? Do not infer unsupported affected versions.">Why might this version be affected?</button>
+							<button type="button" data-guidance-ai-question="Show the non-destructive authorized lab validation steps and expected observations.">Show safe validation steps</button>
+							<button type="button" data-guidance-ai-question="How can I fix this finding and verify the fix with a re-scan?">How do I fix and verify it?</button>
+						</div>
+					</section>
+					<p class="guidance-safety-notice">Guidance only: VulnScan will not run exploits, send validation requests, or interact with the target from this panel.</p>
+				</div>
+			</dialog>
+
 			<footer class="page-footer">
-				<span>WIFI SENTINEL <b>V2.0</b></span>
+				<span>VulnScan <b>v4.13</b></span>
 				<span>AUTHORIZED ASSESSMENT ONLY</span>
 			</footer>
 		</main>
+		</div>
 	</div>
+	{% include "_ai_drawer.html" %}
 </body>
 </html>

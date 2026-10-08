@@ -15,32 +15,69 @@ LOGIN_TEMPLATE = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign in | WiFi Sentinel</title>
-  <style>
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f2f6f2; color: #20342d; font: 15px "Segoe UI", sans-serif; }
-    main { width: min(360px, calc(100% - 36px)); padding: 28px; border: 1px solid #dbe5de; background: #fff; }
-    h1 { margin: 0 0 8px; font-size: 22px; }
-    p { color: #718079; line-height: 1.5; }
-    label { display: block; margin: 16px 0 6px; font-size: 12px; font-weight: 600; }
-    input { width: 100%; box-sizing: border-box; min-height: 42px; padding: 8px 10px; border: 1px solid #c5d2c9; font: inherit; }
-    button { width: 100%; min-height: 42px; margin-top: 20px; border: 0; background: #214e3d; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
-    .error { color: #a32e2e; }
-  </style>
+    <meta name="theme-color" content="#120d18">
+    <title>Sign in | VulnScan v4.13</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/css/auth.css">
 </head>
-<body>
-  <main>
-    <h1>WiFi Sentinel</h1>
-    <p>Sign in to access the local security workspace.</p>
-    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
-    <form method="post" autocomplete="on">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-      <label for="username">Username</label>
-      <input id="username" name="username" autocomplete="username" required autofocus>
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" required>
-      <button type="submit">Sign in</button>
-    </form>
-  </main>
+<body class="auth-page">
+    <header class="auth-header">
+        <a class="auth-brand" href="/" aria-label="VulnScan home">
+            <span class="auth-brand-mark" aria-hidden="true">V</span>
+            <span class="auth-brand-copy"><strong>VulnScan</strong><small>SECURITY OPERATIONS</small></span>
+            <span class="auth-version">v4.13</span>
+        </a>
+        <div class="auth-instance"><span class="auth-live-dot" aria-hidden="true"></span> LOCAL INSTANCE</div>
+    </header>
+
+    <main class="auth-main">
+        <section class="auth-intro" aria-labelledby="auth-title">
+            <p class="auth-eyebrow"><span></span> AUTHORIZED ACCESS ONLY</p>
+            <h1 id="auth-title">Network security.<br><span>Under control.</span></h1>
+            <p class="auth-description">A focused workspace for defensive scans, exposure review, and security findings.</p>
+            <div class="auth-intro-meta">
+                <span>DEFENSIVE + OFFENSIVE</span>
+                <span>LOCAL SECURITY WORKSPACE</span>
+            </div>
+        </section>
+
+        <section class="auth-card" aria-labelledby="signin-title">
+            <div class="auth-card-heading">
+                <span class="auth-card-icon" aria-hidden="true">⌁</span>
+                <div>
+                    <p class="auth-card-kicker">SECURE SIGN-IN</p>
+                    <h2 id="signin-title">Welcome back</h2>
+                </div>
+            </div>
+            <p class="auth-card-copy">Use your administrator or user account to continue.</p>
+            {% if error %}<p class="auth-error" role="alert">{{ error }}</p>{% endif %}
+            <form method="post" autocomplete="on">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label for="username">Username</label>
+                <input id="username" name="username" autocomplete="username" placeholder="Enter your username" required autofocus>
+                <label for="password">Password</label>
+                <div class="auth-password-control">
+                    <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required aria-describedby="password-visibility-help">
+                    <button id="password-toggle" class="auth-password-toggle" type="button" aria-controls="password" aria-label="Show password" aria-pressed="false">Show</button>
+                </div>
+                <button class="auth-submit" type="submit"><span>Sign in</span><span aria-hidden="true">→</span></button>
+            </form>
+            <div class="auth-card-footer"><span class="auth-lock" aria-hidden="true">▣</span> Protected VulnScan workspace</div>
+        </section>
+    </main>
+
+    <footer class="auth-footer"><span>VULNSCAN v4.13</span><span>AUTHORIZED USE ONLY</span></footer>
+    <script>
+        const passwordInput = document.getElementById("password");
+        const passwordToggle = document.getElementById("password-toggle");
+        passwordToggle.addEventListener("click", () => {
+            const showPassword = passwordInput.type === "password";
+            passwordInput.type = showPassword ? "text" : "password";
+            passwordToggle.textContent = showPassword ? "Hide" : "Show";
+            passwordToggle.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
+            passwordToggle.setAttribute("aria-pressed", String(showPassword));
+        });
+    </script>
 </body>
 </html>"""
 
@@ -58,20 +95,47 @@ def _is_loopback(host: str) -> bool:
 def configure_access_control(app, host: str | None = None) -> None:
     """Configure local-only defaults and optional environment-based login."""
     bind_host = host or os.environ.get("WIFI_SENTINEL_HOST", "127.0.0.1")
-    username = os.environ.get("WIFI_SENTINEL_USERNAME", "")
-    password = os.environ.get("WIFI_SENTINEL_PASSWORD", "")
+    legacy_username = os.environ.get("WIFI_SENTINEL_USERNAME", "")
+    legacy_password = os.environ.get("WIFI_SENTINEL_PASSWORD", "")
+    admin_username = os.environ.get("VULNSCAN_ADMIN_USERNAME", "")
+    admin_password = os.environ.get("VULNSCAN_ADMIN_PASSWORD", "")
+    user_username = os.environ.get("VULNSCAN_USER_USERNAME", "")
+    user_password = os.environ.get("VULNSCAN_USER_PASSWORD", "")
     secret_key = os.environ.get("WIFI_SENTINEL_SECRET_KEY", "")
     secure_cookie = os.environ.get("WIFI_SENTINEL_COOKIE_SECURE") == "1"
 
-    if bool(username) != bool(password):
-        raise RuntimeError("Set both WIFI_SENTINEL_USERNAME and WIFI_SENTINEL_PASSWORD.")
+    credential_pairs = (
+        ("WIFI_SENTINEL_USERNAME", legacy_username, "WIFI_SENTINEL_PASSWORD", legacy_password),
+        ("VULNSCAN_ADMIN_USERNAME", admin_username, "VULNSCAN_ADMIN_PASSWORD", admin_password),
+        ("VULNSCAN_USER_USERNAME", user_username, "VULNSCAN_USER_PASSWORD", user_password),
+    )
+    for username_name, configured_username, password_name, configured_password in credential_pairs:
+        if bool(configured_username) != bool(configured_password):
+            raise RuntimeError(f"Set both {username_name} and {password_name}.")
 
-    auth_enabled = bool(username and password)
+    role_auth_requested = bool(admin_username or user_username)
+    if role_auth_requested:
+        if legacy_username:
+            if admin_username and (admin_username, admin_password) != (legacy_username, legacy_password):
+                raise RuntimeError("Legacy and VulnScan administrator credentials conflict.")
+            admin_username = admin_username or legacy_username
+            admin_password = admin_password or legacy_password
+        if not admin_username or not user_username:
+            raise RuntimeError(
+                "Role-based login requires both administrator and user credential pairs."
+            )
+        if hmac.compare_digest(admin_username, user_username):
+            raise RuntimeError("Administrator and user usernames must be different.")
+    else:
+        admin_username = legacy_username
+        admin_password = legacy_password
+
+    auth_enabled = bool(admin_username and admin_password)
+
     remote_bind = not _is_loopback(bind_host)
-    if auth_enabled and (len(password) < 16 or len(secret_key) < 32):
+    if auth_enabled and len(secret_key) < 32:
         raise RuntimeError(
-            "Authentication requires a password of at least 16 characters and "
-            "WIFI_SENTINEL_SECRET_KEY of at least 32 characters."
+            "Authentication requires WIFI_SENTINEL_SECRET_KEY of at least 32 characters."
         )
     if remote_bind and not auth_enabled:
         raise RuntimeError(
@@ -108,13 +172,20 @@ def configure_access_control(app, host: str | None = None) -> None:
         if request.method == "POST":
             expected_token = session.get("_csrf_token", "")
             supplied_token = request.form.get("csrf_token", "")
+            supplied_username = request.form.get("username", "")
+            supplied_password = request.form.get("password", "")
+            is_admin = hmac.compare_digest(supplied_username, admin_username) & hmac.compare_digest(
+                supplied_password, admin_password
+            )
+            is_user = hmac.compare_digest(supplied_username, user_username) & hmac.compare_digest(
+                supplied_password, user_password
+            )
             if not hmac.compare_digest(str(expected_token), supplied_token):
                 error = "The sign-in form expired. Please try again."
-            elif hmac.compare_digest(request.form.get("username", ""), username) & hmac.compare_digest(
-                request.form.get("password", ""), password
-            ):
+            elif is_admin or is_user:
                 session.clear()
                 session["_authenticated"] = True
+                session["_role"] = "admin" if is_admin else "user"
                 csrf_token()
                 session.permanent = True
                 return redirect(request.script_root + "/")
@@ -134,7 +205,11 @@ def configure_access_control(app, host: str | None = None) -> None:
 
     @app.context_processor
     def inject_access_helpers():
-        return {"csrf_token": csrf_token, "auth_enabled": auth_enabled}
+        return {
+            "csrf_token": csrf_token,
+            "auth_enabled": auth_enabled,
+            "is_admin": session.get("_role") == "admin",
+        }
 
     @app.before_request
     def require_authenticated_session():

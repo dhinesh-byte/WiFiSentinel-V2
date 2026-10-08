@@ -1,5 +1,5 @@
 """
-WiFi Sentinel V2.0
+VulnScan v4.13
 scanner/ports.py
 
 Defensive network exposure scanner.
@@ -22,13 +22,17 @@ It does not exploit discovered services.
 from __future__ import annotations
 
 import argparse
-import ctypes
 import ipaddress
 import os
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
+from collections.abc import Callable
+from threading import Event
 from typing import Any
+
+from nmap_options import NSE_MODULES, SCAN_FLAGS, has_raw_scan_privileges
+from scanner.nmap_process import nmap_stderr_excerpt, run_nmap
 
 
 class PortScanner:
@@ -497,19 +501,14 @@ class PortScanner:
     @staticmethod
     def _has_os_detection_privileges() -> bool:
         """Check whether this process can request raw-packet OS fingerprinting."""
-        if os.name == "nt":
-            try:
-                return bool(ctypes.windll.shell32.IsUserAnAdmin())
-            except (AttributeError, OSError):
-                return False
-        return hasattr(os, "geteuid") and os.geteuid() == 0
+        return has_raw_scan_privileges()
 
     # =========================================================
     # VALIDATION
     # =========================================================
 
     @staticmethod
-    def _validate_ip(target: str) -> str:
+    def _validate_ip(target: str, allow_ipv6: bool = False) -> str:
 
         target = str(target).strip()
 
@@ -522,10 +521,10 @@ class PortScanner:
                 f"Invalid IPv4 address: {target}"
             ) from exc
 
-        if address.version != 4:
+        if address.version != 4 and not (allow_ipv6 and address.version == 6):
 
             raise ValueError(
-                "Only IPv4 addresses are supported."
+                "Only IPv4 addresses are supported unless IPv6 is enabled for this admin scan."
             )
 
         return target
@@ -692,9 +691,6 @@ class PortScanner:
                         else "unknown"
                     )
 
-                    if port_state != "open":
-                        continue
-
                     service_element = port_element.find(
                         "service"
                     )
@@ -831,11 +827,23 @@ class PortScanner:
 
             uptime_element = host.find("uptime")
             distance_element = host.find("distance")
+            trace_element = host.find("trace")
+            traceroute = [
+                {
+                    "ttl": hop.get("ttl", ""),
+                    "ip": hop.get("ipaddr", ""),
+                    "host": hop.get("host", ""),
+                    "rtt": hop.get("rtt", ""),
+                }
+                for hop in trace_element.findall("hop")
+            ] if trace_element is not None else []
             scripts_element = host.find("hostscript")
             host_scripts = [
                 {"id": script.get("id", "unknown"), "output": script.get("output", "")}
                 for script in scripts_element.findall("script")
             ] if scripts_element is not None else []
+
+            open_ports = sum(1 for port in ports if port.get("state") == "open")
 
             results.append({
                 "ip": ip,
@@ -844,13 +852,14 @@ class PortScanner:
                 "mac": mac,
                 "vendor": vendor,
                 "ports": ports,
-                "open_ports": len(ports),
+                "open_ports": open_ports,
                 "os": best_os.get("name", "Unknown"),
                 "os_accuracy": best_os.get("accuracy", 0),
                 "os_matches": os_matches,
                 "uptime_seconds": uptime_element.get("seconds") if uptime_element is not None else None,
                 "last_boot": uptime_element.get("lastboot") if uptime_element is not None else None,
                 "distance": distance_element.get("value") if distance_element is not None else None,
+                "traceroute": traceroute,
                 "host_scripts": host_scripts,
                 "status_reason": status_element.get("reason", "") if status_element is not None else "",
             })
@@ -865,9 +874,15 @@ class PortScanner:
         self,
         target: str,
         aggressive: bool = False,
+        nmap_options: dict[str, Any] | None = None,
+        cancel_event: Event | None = None,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
+        command_callback: Callable[[list[str]], None] | None = None,
+        output_callback: Callable[[dict[str, Any]], None] | None = None,
     ) -> dict[str, Any]:
 
-        target = self._validate_ip(target)
+        allow_ipv6 = bool(nmap_options and nmap_options.get("ipv6"))
+        target = self._validate_ip(target, allow_ipv6=allow_ipv6)
 
         if not self.available():
 
@@ -883,74 +898,119 @@ class PortScanner:
                 ),
             }
 
-        selected_ports = self.ports
-        if aggressive:
-            if self.profile == "deep":
-                selected_ports = self.DEEP_PORTS
-            elif self.profile == "thorough":
-                selected_ports = self.THOROUGH_PORTS
+        scan_type = nmap_options.get("scan_type", "connect") if nmap_options else "connect"
+        if nmap_options:
+            port_preset = nmap_options.get("port_preset", "custom" if nmap_options.get("ports") else "profile")
+            selected_ports = nmap_options.get("ports")
+        else:
+            port_preset = "custom"
+            selected_ports = self.ports
+            if aggressive:
+                if self.profile == "deep":
+                    selected_ports = self.DEEP_PORTS
+                elif self.profile == "thorough":
+                    selected_ports = self.THOROUGH_PORTS
+        profile_ports = (
+                self.DEEP_PORTS if self.profile == "deep"
+                else self.THOROUGH_PORTS if self.profile == "thorough"
+                else self.ports
+        )
 
-        command = [
-            self.nmap_path,
+        command = [self.nmap_path, SCAN_FLAGS[scan_type]]
+        if nmap_options and nmap_options.get("include_udp") and scan_type in {"connect", "syn"}:
+            command.append("-sU")
+        if nmap_options is None:
+            command.extend([
+                "-sV",
+                "--version-all" if aggressive and self.profile == "deep" else "--version-light",
+            ])
+        elif nmap_options.get("service_detection", True):
+            if scan_type != "ip-protocol":
+                command.extend(["-sV", "--version-light"])
+        command.append("--open")
+        if port_preset == "top-100":
+            command.extend(["--top-ports", "100"])
+        elif port_preset == "top-1000":
+            command.extend(["--top-ports", "1000"])
+        elif port_preset == "all":
+            all_ports = "0-255" if scan_type == "ip-protocol" else "-"
+            if nmap_options and nmap_options.get("include_udp") and scan_type in {"connect", "syn"}:
+                all_ports = "T:-,U:-"
+            command.extend(["-p", all_ports])
+        else:
+            default_ports = (
+                "53,67,68,123,137,138,161,500,514,1900,4500"
+                if scan_type == "udp"
+                else profile_ports if nmap_options
+                else self.ports
+            )
+            port_spec = selected_ports or (
+                "0-255" if scan_type == "ip-protocol"
+                else default_ports
+            )
+            if scan_type == "udp":
+                port_spec = f"U:{port_spec}"
+            elif nmap_options and nmap_options.get("include_udp") and scan_type in {"connect", "syn"}:
+                udp_ports = "53,67,68,123,137,138,161,500,514,1900,4500"
+                port_spec = f"T:{port_spec},U:{selected_ports or udp_ports}"
+            command.extend([
+                "-p",
+                port_spec,
+            ])
 
-            # TCP connect scan.
-            "-sT",
+        if nmap_options:
+            if nmap_options.get("ipv6"):
+                command.append("-6")
+            if nmap_options.get("discovery_method") == "none":
+                command.append("-Pn")
+            command.append(f"-{nmap_options['timing']}")
+            if nmap_options.get("max_rate"):
+                command.extend(["--max-rate", str(nmap_options["max_rate"])])
+            if nmap_options.get("scan_delay"):
+                command.extend(["--scan-delay", f"{nmap_options['scan_delay']}ms"])
+            command.extend(["--max-retries", str(nmap_options["max_retries"])])
+            command.extend(["--host-timeout", f"{nmap_options['host_timeout']}s"])
+            if nmap_options.get("reason"):
+                command.append("--reason")
+            if nmap_options.get("traceroute"):
+                command.append("--traceroute")
+            if nmap_options.get("packet_trace"):
+                command.append("--packet-trace")
+            if nmap_options.get("exclude_ports"):
+                command.extend(["--exclude-ports", nmap_options["exclude_ports"]])
+            scripts = tuple(
+                script
+                for module in nmap_options.get("nse_modules", [])
+                for script in NSE_MODULES.get(module, ())
+            )
+            if scripts:
+                command.extend(["--script", ",".join(scripts)])
+        else:
+            command.append("-T4")
+            if self.timeout is not None:
+                command.extend(["--host-timeout", f"{self.timeout}s"])
 
-            # Service/version detection.
-            "-sV",
+        command.extend(["-oX", "-"])
+        command.append(target)
 
-            # Version detection depth follows the selected profile.
-            "--version-all" if self.profile == "deep" else "--version-light",
-
-            # Return only open ports.
-            "--open",
-
-            # Faster timing template.
-            "-T4",
-
-            # Host timeout is added below only when configured.
-            # Scan selected ports.
-            "-p",
-            selected_ports,
-
-            # XML output for reliable parsing.
-            "-oX",
-            "-",
-
-            target,
-        ]
-        if self.timeout is not None:
-            insert_at = command.index("-p")
-            command[insert_at:insert_at] = ["--host-timeout", f"{self.timeout}s"]
-
-        os_detection_requested = self._has_os_detection_privileges()
+        # Keep OS detection best-effort for default scans. Admin options can
+        # explicitly disable it, but never force it without OS-level privileges.
+        os_detection_requested = self._has_os_detection_privileges() and (
+            nmap_options is None or nmap_options.get("os_detection", False)
+        )
         if os_detection_requested:
             command.insert(command.index("-oX"), "-O")
 
         try:
 
-            completed = subprocess.run(
+            completed = run_nmap(
                 command,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
                 timeout=(self.timeout + 10) if self.timeout is not None else None,
-                check=False,
+                cancel_event=cancel_event,
+                progress_callback=progress_callback,
+                command_callback=command_callback,
+                output_callback=output_callback,
             )
-
-        except subprocess.TimeoutExpired:
-
-            return {
-                "ip": target,
-                "state": "timeout",
-                "ports": [],
-                "open_ports": 0,
-                "scan_status": "timeout",
-                "error": (
-                    "Host scan exceeded the configured timeout."
-                ),
-            }
 
         except OSError as exc:
 
@@ -963,6 +1023,23 @@ class PortScanner:
                 "error": str(exc),
             }
 
+        if completed.status != "completed":
+            status_names = {
+                "timeout": "timeout",
+                "cancelled": "cancelled",
+                "output_limit": "output_limit",
+            }
+            status = status_names.get(completed.status, "execution_error")
+
+            return {
+                "ip": target,
+                "state": status,
+                "ports": [],
+                "open_ports": 0,
+                "scan_status": status,
+                "error": completed.error or "Nmap scan did not complete.",
+            }
+
         if completed.returncode != 0:
 
             return {
@@ -972,7 +1049,7 @@ class PortScanner:
                 "open_ports": 0,
                 "scan_status": "nmap_error",
                 "error": (
-                    completed.stderr.strip()
+                    nmap_stderr_excerpt(completed.stderr)
                     or "Nmap returned an error."
                 ),
             }
@@ -984,13 +1061,13 @@ class PortScanner:
         if not parsed:
 
             return {
-                "success": True,
+                "success": False,
                 "ip": target,
                 "state": "up",
                 "ports": [],
                 "open_ports": 0,
-                "scan_status": "complete",
-                "error": None,
+                "scan_status": "parse_error",
+                "error": "Scanner completed but result parsing failed.",
                 "os_detection_status": "not_detected" if os_detection_requested else "skipped_unprivileged",
             }
 
@@ -999,9 +1076,23 @@ class PortScanner:
         result["success"] = True
         result["scan_status"] = "complete"
         result["error"] = None
-        result["os_detection_status"] = (
-            "detected" if result.get("os_matches") else "not_detected"
-        ) if os_detection_requested else "skipped_unprivileged"
+        if os_detection_requested:
+            result["os_detection_status"] = "detected" if result.get("os_matches") else "not_detected"
+        elif nmap_options and not nmap_options.get("os_detection"):
+            result["os_detection_status"] = "disabled_by_admin"
+        else:
+            result["os_detection_status"] = "skipped_unprivileged"
+            result["os_detection_reason"] = (
+                "Nmap OS fingerprinting requires elevated privileges."
+                if nmap_options and nmap_options.get("os_detection")
+                else "OS fingerprinting was not requested."
+            )
+        if os_detection_requested and not result.get("os_matches"):
+            result["os_detection_reason"] = "Nmap did not return a confident OS match."
+        if nmap_options and nmap_options.get("packet_trace"):
+            result["packet_trace"] = completed.stderr[:12000]
+        if nmap_options and nmap_options.get("output_format") in {"xml", "both"}:
+            result["nmap_xml"] = completed.stdout
 
         return result
 
@@ -1013,6 +1104,11 @@ class PortScanner:
         self,
         target: str,
         aggressive: bool = False,
+        nmap_options: dict[str, Any] | None = None,
+        cancel_event: Event | None = None,
+        progress_callback: Callable[[dict[str, Any]], None] | None = None,
+        command_callback: Callable[[list[str]], None] | None = None,
+        output_callback: Callable[[dict[str, Any]], None] | None = None,
     ) -> dict[str, Any]:
 
         """
@@ -1033,6 +1129,11 @@ class PortScanner:
         return self.scan_host(
             target,
             aggressive=aggressive,
+            nmap_options=nmap_options,
+            cancel_event=cancel_event,
+            progress_callback=progress_callback,
+            command_callback=command_callback,
+            output_callback=output_callback,
         )
 
     # =========================================================
@@ -1192,7 +1293,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         description=(
-            "WiFi Sentinel V2.0 "
+            "VulnScan v4.13 "
             "Defensive TCP Exposure Scanner"
         )
     )
@@ -1225,7 +1326,7 @@ def main() -> None:
     )
 
     print("=" * 60)
-    print("WiFi Sentinel V2.0")
+    print("VulnScan v4.13")
     print("Defensive Port Analysis")
     print("=" * 60)
 

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if auth_enabled %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endif %}
+    <title>{% block title %}VulnScan v4.13{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/css/modes.css">
+    <link rel="stylesheet" href="/static/css/shared-shell.css">
+    <link rel="stylesheet" href="/offensive/static/css/dashboard.css">
+    {% block head %}{% endblock %}
+    <script src="/offensive/static/js/dashboard.js" defer></script>
+</head>
+<body data-mode="{% block mode %}offensive{% endblock %}">
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-icon">{% block sidebar_icon %}⚔{% endblock %}</span>
+                <div>
+                    <h1>VulnScan v4.13</h1>
+                    <span>Network Security Assessment</span>
+                </div>
+            </div>
+
+            <nav class="navigation" aria-label="Main navigation">
+                <a href="/" class="nav-item"><span>⌂</span><span>Overview</span></a>
+                <a href="/history" class="nav-item"><span>◷</span><span>Scan History</span></a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="status-dot"></span>
+                <div>
+                    <strong>System Ready</strong>
+                    <small>{% block sidebar_state %}Offensive analysis mode{% endblock %}</small>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="brand" aria-label="VulnScan product branding">
+                    <span class="brand-icon">{% block header_icon %}⚔{% endblock %}</span>
+                    <div>
+                        <h1>VulnScan v4.13</h1>
+                        <span>Network Security Assessment Platform</span>
+                    </div>
+                </div>
+
+                <div class="top-status">
+                    <span class="online-dot"></span>
+                    <span class="mode-label">Mode: {% block mode_name %}Offensive{% endblock %}</span>
+                    <nav class="product-nav" aria-label="Product navigation">
+                        <a href="/">Overview</a>
+                        <a href="/history">History</a>
+                    </nav>
+                    <div class="mode-switcher" aria-label="Security mode selector">
+                        <a href="/defensive" class="{% if request.path.startswith('/defensive') %}is-current{% endif %}">🛡 Defensive</a>
+                        <a href="/offensive/" class="{% if request.path.startswith('/offensive') %}is-current{% endif %}">⚔ Offensive</a>
+                    </div>
+                    {% if auth_enabled %}
+                    <form class="logout-form" action="{{ url_for('wifi_sentinel_access.logout') }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">Sign out</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </header>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}VulnScan v4.13 | Offensive Security{% endblock %}
+{% block mode %}offensive{% endblock %}
+{% block sidebar_icon %}⚔{% endblock %}
+{% block header_icon %}⚔{% endblock %}
+{% block sidebar_state %}Offensive assessment mode{% endblock %}
+{% block mode_name %}Offensive{% endblock %}
+
+{% block content %}
+<section class="panel scan-panel" id="scan" aria-labelledby="scan-title">
+    <div class="section-heading">
+        <div>
+            <p class="section-index">01 / Authorized Discovery</p>
+            <h2 id="scan-title">Start a network scan</h2>
+        </div>
+        <p class="console-boundary">IPv4 host or network up to /24</p>
+    </div>
+
+    <form class="scan-form" id="scan-form">
+        <div class="target-control">
+            <label for="target-input">Target</label>
+            <div class="target-input-wrap">
+                <input id="target-input" name="target" type="text" inputmode="decimal" placeholder="192.168.1.0/24" autocomplete="off" spellcheck="false" required>
+                <span class="input-kind">IPv4</span>
+            </div>
+        </div>
+
+        <fieldset class="scan-options">
+            <legend>Optional checks</legend>
+            <label class="option-control" for="include-web">
+                <input id="include-web" type="checkbox" checked>
+                <span>Web / TLS</span>
+            </label>
+            <label class="option-control" for="include-udp">
+                <input id="include-udp" type="checkbox">
+                <span>Selected UDP ports</span>
+            </label>
+        </fieldset>
+
+        <label class="authorization-control" for="authorization-check">
+            <input id="authorization-check" type="checkbox" required>
+            <span>I am authorized to assess this network</span>
+        </label>
+
+        <button class="scan-button" id="start-scan" type="submit" disabled>
+            <span>Start authorized scan</span><span class="button-arrow" aria-hidden="true">→</span>
+        </button>
+    </form>
+
+    <div class="scan-feedback" aria-live="polite">
+        <div class="scan-pulse" id="scan-pulse" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="feedback-copy">
+            <div class="feedback-topline"><span id="scan-status">PENDING</span><span class="feedback-separator">/</span><span id="scan-stage">AWAITING TARGET</span></div>
+            <p id="scan-message">No assessment has been run in this session.</p>
+            <div class="offensive-progress-track" aria-hidden="true">
+                <div id="offensive-progress" class="offensive-progress-bar" data-progress="0"></div>
+            </div>
+        </div>
+        <a class="report-link" id="report-link" href="#" hidden download>Download report JSON</a>
+    </div>
+    <p class="form-error" id="form-error" role="alert" hidden></p>
+</section>
+
+<section class="stats-grid" aria-label="Assessment statistics">
+    <article class="metric-card">
+        <span>Hosts Discovered</span>
+        <strong id="metric-discovered">--</strong>
+    </article>
+    <article class="metric-card">
+        <span>Hosts Assessed</span>
+        <strong id="metric-assessed">--</strong>
+    </article>
+    <article class="metric-card">
+        <span>Open Ports</span>
+        <strong id="metric-ports">--</strong>
+    </article>
+    <article class="metric-card">
+        <span>Identified Services</span>
+        <strong id="metric-services">--</strong>
+    </article>
+</section>
+
+<section class="content-grid">
+    <article class="section-panel panel">
+        <div class="panel-title">
+            <h2>Hosts Assessed</h2>
+            <span class="status-badge" id="host-count">0 Hosts</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Target</th><th>Hostname</th><th>Open Ports</th></tr></thead>
+                <tbody id="hosts-table-body"><tr class="empty-row"><td colspan="3">Host details will appear after a scan.</td></tr></tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="section-panel panel">
+        <div class="panel-title">
+            <h2>Findings</h2>
+            <span class="status-badge" id="metric-findings">--</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Severity</th><th>Summary</th></tr></thead>
+                <tbody id="cve-table-body"><tr class="empty-row"><td colspan="2">No exact catalog matches.</td></tr></tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}
